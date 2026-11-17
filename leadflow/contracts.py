@@ -12,7 +12,7 @@ Agent outputs are Pydantic models, so an LLM response can be validated with
 Model.model_validate_json(text), and Model.model_json_schema() can be passed
 to a structured-output API.
 """
-from typing import Dict, List, Literal, Optional, Protocol, Sequence
+from typing import Dict, List, Literal, Optional, Protocol, Sequence, get_args
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -20,9 +20,15 @@ from leadflow.models import EligibleReps, Lead, Rep
 
 Competitor = Literal["Intercom", "Zendesk", "Drift", "Crisp", "Tidio"]
 
+COMPETITORS = get_args(Competitor)
+
 Level = Literal["High", "Medium", "Low"]
 
-ToolName = Literal["theirstack", "posthog", "salesforce", "calendar"]
+ToolName = Literal["theirstack", "posthog", "salesforce", "calendar", "llm"]
+
+BuyingStage = Literal["exploring", "evaluating", "ready_to_buy", "unknown"]
+
+ExtractionMethod = Literal["llm", "rules"]
 
 ToolStatus = Literal["ok", "mocked", "timeout", "error", "skipped"]
 
@@ -63,8 +69,62 @@ class BehaviorSignals(BaseModel):
     summary: Optional[str] = Field(default=None, max_length=500)
 
 
+class NoteSignals(BaseModel):
+    """What the free-text note says, extracted by the LLM (or the rules fallback).
+
+    Only facts stated in the note belong here. Scoring happens afterwards, in
+    leadflow.scoring, so the same signals always give the same score.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    deadline_days: Optional[int] = Field(
+        default=None,
+        ge=0,
+        description="Days until a stated deadline (contract end, go-live). 0 for 'immediately' or 'now'. "
+        "Null when no timing is stated.",
+    )
+    seats: Optional[int] = Field(
+        default=None, ge=1, description="Number of seats, agents, or users the buyer says they need."
+    )
+    competitor_mentioned: Optional[Competitor] = Field(
+        default=None, description="Competitor product the note names, if any."
+    )
+    compliance: List[str] = Field(
+        default_factory=list,
+        max_length=6,
+        description="Compliance or security requirements named in the note, e.g. HIPAA, SOC 2, GDPR, "
+        "data residency, encryption.",
+    )
+    buying_stage: BuyingStage = Field(
+        default="unknown",
+        description="exploring: learning or browsing. evaluating: comparing options or replacing a tool. "
+        "ready_to_buy: says they are ready to purchase, upgrade, or review a contract.",
+    )
+    pain_points: List[str] = Field(
+        default_factory=list, max_length=3, description="Up to 3 short problems the buyer wants solved."
+    )
+    summary: Optional[str] = Field(
+        default=None, max_length=300, description="One sentence a sales rep can read in five seconds."
+    )
+
+
+class ScoreLine(BaseModel):
+    """One rubric line that added points to intent_score."""
+
+    model_config = ConfigDict(frozen=True)
+
+    factor: str
+    points: int
+    detail: str
+
+
 class BuyerAssessment(BaseModel):
-    """Buyer agent output. intent_score and urgency_tier are scored against the workbook."""
+    """Buyer agent output. intent_score and urgency_tier are scored against the workbook.
+
+    The score is the sum of score_breakdown, computed by rules from signals,
+    the form, and behavior. The LLM never sets the score directly.
+    """
 
     model_config = ConfigDict(
         frozen=True,
@@ -112,6 +172,9 @@ class BuyerAssessment(BaseModel):
     firmographics: Optional[Firmographics] = None
     behavior: Optional[BehaviorSignals] = None
     tool_status: Dict[ToolName, ToolStatus] = Field(default_factory=dict)
+    signals: Optional[NoteSignals] = None
+    extraction: Optional[ExtractionMethod] = None
+    score_breakdown: List[ScoreLine] = Field(default_factory=list)
 
 
 class RepCapacity(BaseModel):

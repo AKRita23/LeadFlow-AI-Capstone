@@ -14,6 +14,8 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import pandas as pd
 
+from leadflow.contracts import COMPETITORS, BehaviorSignals, Firmographics
+from leadflow.enrichment import EnrichmentRow
 from leadflow.models import Account, AccountRecordType, Lead, LeadExpectation, Rep, TerritoryRule
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
@@ -85,6 +87,39 @@ def load_leads(path: Path = DATASET_PATH) -> Tuple[List[Lead], List[LeadExpectat
             )
         )
     return leads, expectations
+
+
+def load_enrichment(path: Path = DATASET_PATH) -> List[EnrichmentRow]:
+    """Return the TheirStack and PostHog columns of the buyer sheet, one row per lead.
+
+    Leads the workbook never enriched (the excluded self-serve and test rows)
+    get None for both.
+    """
+    df = pd.read_excel(path, sheet_name=BUYER_SHEET, header=1)
+    rows = []
+    for _, row in df.iterrows():
+        r = {k: _clean(v) for k, v in row.items()}
+        if r["Submission ID"] is None:
+            continue
+        firmographics = None
+        if r["Industry"] is not None:
+            firmographics = Firmographics(
+                domain=str(r["Domain"]).lower(),
+                industry=r["Industry"],
+                headcount=None if r["Headcount"] is None else int(r["Headcount"]),
+                tech_stack=_split_list(r["Full Tech Stack"], ","),
+                competitors_detected=[c for c in COMPETITORS if c in (r["Competitors Detected"] or "")],
+            )
+        behavior = None
+        if r["Pricing Views (48h)"] is not None:
+            behavior = BehaviorSignals(
+                pricing_views_48h=int(r["Pricing Views (48h)"]),
+                doc_views_48h=int(r["Doc Views (48h)"]),
+                sessions_7d=int(r["Sessions (7d)"]),
+                summary=r["Telemetry Summary"],
+            )
+        rows.append(EnrichmentRow(r["Company"], r["Work Email"], firmographics, behavior))
+    return rows
 
 
 def load_accounts(path: Path = ACCOUNTS_PATH) -> List[Account]:
