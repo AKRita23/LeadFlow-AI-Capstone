@@ -46,7 +46,7 @@ class ClaudeExtractor:
 
             client = anthropic.Anthropic(timeout=timeout, max_retries=1)
         self.client = client
-        self.model = model or os.environ.get("LEADFLOW_BUYER_MODEL", DEFAULT_MODEL)
+        self.model = model or os.environ.get("LEADFLOW_BUYER_MODEL") or DEFAULT_MODEL
 
     def __call__(self, lead: Lead) -> NoteSignals:
         response = self.client.messages.create(

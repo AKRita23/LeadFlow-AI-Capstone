@@ -8,6 +8,7 @@ The steps it takes depend on what it finds:
 
 It sees only the lead and its own tool results, never rep data.
 """
+import logging
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 
@@ -28,6 +29,8 @@ from leadflow.models import Lead
 from leadflow.screening import is_personal_domain
 from leadflow.scoring import score_buyer
 
+
+logger = logging.getLogger(__name__)
 
 SIGNAL_ORDER = (
     "deadline", "seats", "competitor", "compliance", "buying_stage", "pricing_views", "doc_views", "sessions", "role"
@@ -73,7 +76,8 @@ class BuyerContextAgent:
             return Extraction(extract_with_rules(lead), "rules", "skipped")
         try:
             return Extraction(self.extractor(lead), "llm", "ok")
-        except Exception:
+        except Exception as exc:
+            logger.warning("LLM extraction failed for %s, using rules: %s", lead.submission_id, exc)
             return Extraction(extract_with_rules(lead), "rules", "error")
 
 

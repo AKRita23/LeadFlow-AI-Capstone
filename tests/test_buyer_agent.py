@@ -7,7 +7,7 @@ from leadflow.contracts import NoteSignals
 from leadflow.data_loader import load_enrichment, load_leads
 from leadflow.enrichment import MockPostHog, MockTheirStack
 from leadflow.eval_buyer import load_gold, run, signal_agreement, summarize
-from leadflow.extraction import TOOL_NAME, ClaudeExtractor, extract_with_rules
+from leadflow.extraction import DEFAULT_MODEL, TOOL_NAME, ClaudeExtractor, extract_with_rules
 from leadflow.scoring import score_buyer, tier_for
 
 LEADS, EXPECTATIONS = load_leads()
@@ -155,6 +155,12 @@ def test_claude_extractor_forces_the_signals_tool():
     assert messages.request["tool_choice"] == {"type": "tool", "name": TOOL_NAME}
     assert messages.request["temperature"] == 0
     assert "Intercom expires in 2 weeks" in messages.request["messages"][0]["content"]
+
+
+def test_blank_model_env_uses_default(monkeypatch):
+    monkeypatch.setenv("LEADFLOW_BUYER_MODEL", "")
+    extractor = ClaudeExtractor(client=SimpleNamespace(messages=FakeMessages([])))
+    assert extractor.model == DEFAULT_MODEL
 
 
 def test_claude_extractor_rejects_missing_tool_call():
