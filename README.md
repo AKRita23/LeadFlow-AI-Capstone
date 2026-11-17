@@ -1,6 +1,52 @@
 # LeadFlow-AI-Capstone
 An autonomous multi-agent system to continuously evaluate live technographic and behavioral intent data, dynamically balance sales workloads, and instantly match high-intent prospects with the right sales reps.
 
+## How a lead flows
+
+Every inbound form submission for BeaconDesk goes through cheap deterministic checks first. Only a new prospect with eligible reps reaches the two agents, which run in parallel: one reads the buyer, the other scores rep capacity. A routing agent then proposes the match, and code validates it before the assignment is committed.
+
+Green steps are built and run from `POST /leads`. Dashed steps are planned. Rounded boxes are the `status` values the API returns.
+
+```mermaid
+flowchart TD
+    form["Inbound web form<br/>fields and free-text note"] --> api{"POST /leads<br/>schema valid?"}
+    api -- "no" --> invalid(["422 with per-field errors"])
+    api -- "yes" --> screen{"Screening<br/>spam, noise, non-ICP"}
+
+    screen -- "test, internal or<br/>competitor address" --> dropped(["dropped"])
+    screen -- "recruiter, media or<br/>1-15 people" --> selfserve(["self_serve"])
+    screen -- "pass" --> dup{"Same email in<br/>the last 30 days?"}
+
+    dup -- "yes" --> duplicate(["duplicate<br/>keeps the earlier rep"])
+    dup -- "no" --> account{"Existing account?<br/>match on email domain"}
+
+    account -- "one owner" --> keep(["preserve_owner<br/>with handoff brief"])
+    account -- "two owners or none" --> exception(["ownership_exception<br/>for RevOps"])
+    account -- "no match" --> filter["Rep-pool filter<br/>territory, segment, language,<br/>availability, daily cap, working hours"]
+
+    filter -- "nobody eligible" --> noreps(["no_eligible_reps"])
+    filter -- "up to 6 reps" --> shortlist(["new_prospect<br/>with shortlist"])
+
+    shortlist --> buyer["Buyer agent<br/>note, TheirStack, PostHog<br/>intent score and urgency"]
+    shortlist --> capacity["Capacity service<br/>pipeline, backlog, meetings,<br/>competitor and vertical fit"]
+    buyer --> routing["Routing agent<br/>primary and backup rep,<br/>buyer brief"]
+    capacity --> routing
+    routing --> commit["Validate, reserve capacity<br/>and commit assignment"]
+    commit --> handoff["Rep handoff and<br/>decision history"]
+
+    store[("SQLite<br/>submissions and decisions")]
+    dup -. "reads earlier leads" .-> store
+    keep -.-> store
+    exception -.-> store
+
+    classDef built fill:#dcfce7,stroke:#15803d,color:#14532d
+    classDef outcome fill:#fef3c7,stroke:#b45309,color:#78350f
+    classDef planned fill:#f3f4f6,stroke:#6b7280,color:#374151,stroke-dasharray:5 4
+    class form,api,screen,dup,account,filter,store built
+    class invalid,dropped,selfserve,duplicate,keep,exception,noreps,shortlist outcome
+    class buyer,capacity,routing,commit,handoff planned
+```
+
 ## Status
 
 | Flow stage | Status |
