@@ -30,6 +30,25 @@ Every lead is written to the `submissions` table, which is what the duplicate ch
 
 Free-text notes are not screened. Words like "student" appear in valid notes (an EdTech buyer's student support spike), so notes are left to the buyer agent.
 
+## Agent contracts
+
+`leadflow/contracts.py` fixes what the agents receive and return, so they can be built separately and plugged into triage. Each output is a Pydantic model. Validate an LLM response with `Model.model_validate_json(text)`, or pass `Model.model_json_schema()` to a structured-output API. Each model has a worked example for the FinPay lead (`sub_8f92a1c4`).
+
+| Component | Receives | Returns |
+|---|---|---|
+| Buyer agent | The `Lead` only, never rep data | `BuyerAssessment`: `intent_score` 1-100, `urgency_tier`, `detected_competitor`, `buying_signals`, `note_summary`, `rationale`, the TheirStack `firmographics` and PostHog `behavior` it used, and `tool_status` per tool |
+| Capacity service | The `EligibleReps` shortlist, the roster, and the prospect's domain, never buyer intent | `CapacityMatrix`: one `RepCapacity` row per shortlisted rep with bandwidth tier, stage pressure, pipeline, backlog, meeting load, vertical expertise, and competitor strengths |
+| Routing agent | The lead, both outputs above, and the shortlist | `RoutingProposal`: `primary_rep_id`, `backup_rep_id`, `routing_rationale`, `rep_brief` |
+
+Tiers are `High`, `Medium`, or `Low`, matching the workbook. Competitors are `Intercom`, `Zendesk`, `Drift`, `Crisp`, or `Tidio`. `tool_status` is `ok`, `mocked`, `timeout`, `error`, or `skipped`, which is what the fallback-rate eval counts.
+
+Two checks run before anything is committed:
+
+- `check_capacity` requires the matrix to cover exactly the shortlisted reps.
+- `check_proposal` requires both reps to be on the shortlist and different. A backup is required whenever the shortlist has more than one rep.
+
+Each returns a list of problems, empty when the output is usable. `StepTiming` records how long each stage took and whether it timed out or fell back, for the latency evals and the demo.
+
 ## Setup
 
 Requires Python 3.9+.
