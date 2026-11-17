@@ -1,0 +1,18 @@
+{
+  "_about": "Hand-labelled note signals for the 15 workbook leads routed to the buyer agent. Used to check extraction accuracy. Drafted from the note text; the team should review.",
+  "sub_8f92a1c4": {"deadline_days": 14, "seats": 40, "competitor_mentioned": "Intercom", "compliance": [], "buying_stage": "evaluating"},
+  "sub_9b31c2d8": {"deadline_days": null, "seats": null, "competitor_mentioned": "Zendesk", "compliance": ["HIPAA", "SOC 2 Type II"], "buying_stage": "evaluating"},
+  "sub_4a77e5f1": {"deadline_days": null, "seats": null, "competitor_mentioned": "Crisp", "compliance": [], "buying_stage": "evaluating"},
+  "sub_2e88b9c2": {"deadline_days": null, "seats": null, "competitor_mentioned": "Drift", "compliance": [], "buying_stage": "evaluating"},
+  "sub_7d12f3a6": {"deadline_days": 0, "seats": 25, "competitor_mentioned": "Tidio", "compliance": [], "buying_stage": "ready_to_buy"},
+  "sub_3c55d8e9": {"deadline_days": null, "seats": null, "competitor_mentioned": null, "compliance": [], "buying_stage": "unknown"},
+  "sub_5k88p2w1": {"deadline_days": null, "seats": null, "competitor_mentioned": null, "compliance": [], "buying_stage": "evaluating"},
+  "sub_6m33q9r4": {"deadline_days": null, "seats": null, "competitor_mentioned": null, "compliance": ["data residency", "encryption"], "buying_stage": "evaluating"},
+  "sub_9x11k4v7": {"deadline_days": null, "seats": null, "competitor_mentioned": null, "compliance": [], "buying_stage": "evaluating"},
+  "sub_2h55j8b2": {"deadline_days": null, "seats": null, "competitor_mentioned": null, "compliance": [], "buying_stage": "evaluating"},
+  "sub_4p77m1c6": {"deadline_days": null, "seats": 50, "competitor_mentioned": "Zendesk", "compliance": [], "buying_stage": "ready_to_buy"},
+  "sub_8t22f6d9": {"deadline_days": null, "seats": null, "competitor_mentioned": null, "compliance": ["GDPR DPA", "HIPAA"], "buying_stage": "evaluating"},
+  "sub_1z33n5s8": {"deadline_days": null, "seats": null, "competitor_mentioned": null, "compliance": [], "buying_stage": "exploring"},
+  "sub_5q99w3k2": {"deadline_days": null, "seats": null, "competitor_mentioned": null, "compliance": [], "buying_stage": "evaluating"},
+  "sub_3w88r7h5": {"deadline_days": null, "seats": null, "competitor_mentioned": null, "compliance": [], "buying_stage": "evaluating"}
+}
