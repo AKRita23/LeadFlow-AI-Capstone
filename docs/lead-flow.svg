@@ -105,7 +105,7 @@
 <rect class="node" x="843" y="102" width="124" height="56" rx="10"/>
 <text class="ntitle" x="905" y="127" text-anchor="middle">Rep filter</text>
 <text class="nsub" x="905" y="144" text-anchor="middle">territory, hours, cap</text>
-<rect class="node planned" x="828" y="322" width="154" height="56" rx="10"/>
+<rect class="node" x="828" y="322" width="154" height="56" rx="10"/>
 <text class="ntitle" x="905" y="347" text-anchor="middle">Buyer agent</text>
 <text class="nsub" x="905" y="364" text-anchor="middle">note, TheirStack, PostHog</text>
 <rect class="node planned" x="828" y="422" width="154" height="56" rx="10"/>
@@ -185,7 +185,7 @@
 <text class="ctext" x="40" y="531" opacity="0">No existing account for finpay.es, so this is a new prospect<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.121757;0.151997" values="0;1;0"/></text>
 <text class="ctext" x="40" y="531" opacity="0">5 eligible reps in EMEA-Southern: Mid-Market, Spanish, active, under cap, in hours<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.151997;0.181641" values="0;1;0"/></text>
 <text class="ctext" x="40" y="531" opacity="0">The shortlist goes to both agents at once<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.181641;0.220038" values="0;1;0"/></text>
-<text class="ctext" x="40" y="531" opacity="0">In parallel: the buyer agent reads intent (workbook expects 95, High) and the capacity service scores the 5 reps<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.220038;0.253263" values="0;1;0"/></text>
+<text class="ctext" x="40" y="531" opacity="0">In parallel: the buyer agent scores intent 98, High (workbook: 95) and the capacity service scores the 5 reps<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.220038;0.253263" values="0;1;0"/></text>
 <text class="ctext" x="40" y="531" opacity="0">The routing agent proposes a primary and a backup rep from the 5<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.253263;0.284100" values="0;1;0"/></text>
 <text class="ctext" x="40" y="531" opacity="0">Both reps are checked against the shortlist, then the assignment is committed<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.284100;0.314937" values="0;1;0"/></text>
 <text class="ctext" x="40" y="531" opacity="0">The rep gets the buyer brief, and the decision is saved<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.314937;0.346769" values="0;1;0"/></text>

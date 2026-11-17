@@ -50,7 +50,7 @@ STATUSES: Dict[str, Tuple[float, float, float, str]] = {
     "new_prospect": (1050, 130, 116, "new_prospect"),
 }
 
-PLANNED = {"buyer", "capacity", "routing", "commit", "handoff"}
+PLANNED = {"capacity", "routing", "commit", "handoff"}
 
 STATUS_HEIGHT = 30
 
@@ -92,7 +92,7 @@ SCENARIOS = [
             ("acct", "No existing account for finpay.es, so this is a new prospect"),
             ("filter", "5 eligible reps in EMEA-Southern: Mid-Market, Spanish, active, under cap, in hours"),
             ("new_prospect", "The shortlist goes to both agents at once"),
-            ("buyer", "In parallel: the buyer agent reads intent (workbook expects 95, High) and "
+            ("buyer", "In parallel: the buyer agent scores intent 98, High (workbook: 95) and "
                       "the capacity service scores the 5 reps"),
             ("routing", "The routing agent proposes a primary and a backup rep from the 5"),
             ("commit", "Both reps are checked against the shortlist, then the assignment is committed"),

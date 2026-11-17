@@ -1,0 +1,1253 @@
+{
+  "data": {
+    "edges": [
+      {
+        "animated": false,
+        "className": "",
+        "data": {
+          "sourceHandle": {
+            "dataType": "LeadFlowBuyerScore",
+            "id": "buyer_score",
+            "name": "assessment",
+            "output_types": [
+              "Message"
+            ]
+          },
+          "targetHandle": {
+            "fieldName": "input_value",
+            "id": "assessment",
+            "inputTypes": [
+              "Data",
+              "JSON",
+              "DataFrame",
+              "Table",
+              "Message"
+            ],
+            "type": "other"
+          }
+        },
+        "id": "reactflow__edge-buyer_score{\u0153dataType\u0153:\u0153LeadFlowBuyerScore\u0153,\u0153id\u0153:\u0153buyer_score\u0153,\u0153name\u0153:\u0153assessment\u0153,\u0153output_types\u0153:[\u0153Message\u0153]}-assessment{\u0153fieldName\u0153:\u0153input_value\u0153,\u0153id\u0153:\u0153assessment\u0153,\u0153inputTypes\u0153:[\u0153Data\u0153,\u0153JSON\u0153,\u0153DataFrame\u0153,\u0153Table\u0153,\u0153Message\u0153],\u0153type\u0153:\u0153other\u0153}",
+        "source": "buyer_score",
+        "sourceHandle": "{\u0153dataType\u0153: \u0153LeadFlowBuyerScore\u0153, \u0153id\u0153: \u0153buyer_score\u0153, \u0153name\u0153: \u0153assessment\u0153, \u0153output_types\u0153: [\u0153Message\u0153]}",
+        "target": "assessment",
+        "targetHandle": "{\u0153fieldName\u0153: \u0153input_value\u0153, \u0153id\u0153: \u0153assessment\u0153, \u0153inputTypes\u0153: [\u0153Data\u0153, \u0153JSON\u0153, \u0153DataFrame\u0153, \u0153Table\u0153, \u0153Message\u0153], \u0153type\u0153: \u0153other\u0153}"
+      },
+      {
+        "animated": false,
+        "className": "",
+        "data": {
+          "sourceHandle": {
+            "dataType": "LeadFlowParseLead",
+            "id": "parse_lead",
+            "name": "lead",
+            "output_types": [
+              "JSON"
+            ]
+          },
+          "targetHandle": {
+            "fieldName": "lead",
+            "id": "buyer_score",
+            "inputTypes": [
+              "Data",
+              "JSON"
+            ],
+            "type": "other"
+          }
+        },
+        "id": "reactflow__edge-parse_lead{\u0153dataType\u0153:\u0153LeadFlowParseLead\u0153,\u0153id\u0153:\u0153parse_lead\u0153,\u0153name\u0153:\u0153lead\u0153,\u0153output_types\u0153:[\u0153JSON\u0153]}-buyer_score{\u0153fieldName\u0153:\u0153lead\u0153,\u0153id\u0153:\u0153buyer_score\u0153,\u0153inputTypes\u0153:[\u0153Data\u0153,\u0153JSON\u0153],\u0153type\u0153:\u0153other\u0153}",
+        "source": "parse_lead",
+        "sourceHandle": "{\u0153dataType\u0153: \u0153LeadFlowParseLead\u0153, \u0153id\u0153: \u0153parse_lead\u0153, \u0153name\u0153: \u0153lead\u0153, \u0153output_types\u0153: [\u0153JSON\u0153]}",
+        "target": "buyer_score",
+        "targetHandle": "{\u0153fieldName\u0153: \u0153lead\u0153, \u0153id\u0153: \u0153buyer_score\u0153, \u0153inputTypes\u0153: [\u0153Data\u0153, \u0153JSON\u0153], \u0153type\u0153: \u0153other\u0153}"
+      },
+      {
+        "animated": false,
+        "className": "",
+        "data": {
+          "sourceHandle": {
+            "dataType": "LeadFlowBuyerEnrichment",
+            "id": "buyer_enrichment",
+            "name": "enrichment",
+            "output_types": [
+              "JSON"
+            ]
+          },
+          "targetHandle": {
+            "fieldName": "enrichment",
+            "id": "buyer_score",
+            "inputTypes": [
+              "Data",
+              "JSON"
+            ],
+            "type": "other"
+          }
+        },
+        "id": "reactflow__edge-buyer_enrichment{\u0153dataType\u0153:\u0153LeadFlowBuyerEnrichment\u0153,\u0153id\u0153:\u0153buyer_enrichment\u0153,\u0153name\u0153:\u0153enrichment\u0153,\u0153output_types\u0153:[\u0153JSON\u0153]}-buyer_score{\u0153fieldName\u0153:\u0153enrichment\u0153,\u0153id\u0153:\u0153buyer_score\u0153,\u0153inputTypes\u0153:[\u0153Data\u0153,\u0153JSON\u0153],\u0153type\u0153:\u0153other\u0153}",
+        "source": "buyer_enrichment",
+        "sourceHandle": "{\u0153dataType\u0153: \u0153LeadFlowBuyerEnrichment\u0153, \u0153id\u0153: \u0153buyer_enrichment\u0153, \u0153name\u0153: \u0153enrichment\u0153, \u0153output_types\u0153: [\u0153JSON\u0153]}",
+        "target": "buyer_score",
+        "targetHandle": "{\u0153fieldName\u0153: \u0153enrichment\u0153, \u0153id\u0153: \u0153buyer_score\u0153, \u0153inputTypes\u0153: [\u0153Data\u0153, \u0153JSON\u0153], \u0153type\u0153: \u0153other\u0153}"
+      },
+      {
+        "animated": false,
+        "className": "",
+        "data": {
+          "sourceHandle": {
+            "dataType": "LeadFlowNoteSignals",
+            "id": "note_signals",
+            "name": "signals",
+            "output_types": [
+              "JSON"
+            ]
+          },
+          "targetHandle": {
+            "fieldName": "signals",
+            "id": "buyer_score",
+            "inputTypes": [
+              "Data",
+              "JSON"
+            ],
+            "type": "other"
+          }
+        },
+        "id": "reactflow__edge-note_signals{\u0153dataType\u0153:\u0153LeadFlowNoteSignals\u0153,\u0153id\u0153:\u0153note_signals\u0153,\u0153name\u0153:\u0153signals\u0153,\u0153output_types\u0153:[\u0153JSON\u0153]}-buyer_score{\u0153fieldName\u0153:\u0153signals\u0153,\u0153id\u0153:\u0153buyer_score\u0153,\u0153inputTypes\u0153:[\u0153Data\u0153,\u0153JSON\u0153],\u0153type\u0153:\u0153other\u0153}",
+        "source": "note_signals",
+        "sourceHandle": "{\u0153dataType\u0153: \u0153LeadFlowNoteSignals\u0153, \u0153id\u0153: \u0153note_signals\u0153, \u0153name\u0153: \u0153signals\u0153, \u0153output_types\u0153: [\u0153JSON\u0153]}",
+        "target": "buyer_score",
+        "targetHandle": "{\u0153fieldName\u0153: \u0153signals\u0153, \u0153id\u0153: \u0153buyer_score\u0153, \u0153inputTypes\u0153: [\u0153Data\u0153, \u0153JSON\u0153], \u0153type\u0153: \u0153other\u0153}"
+      },
+      {
+        "animated": false,
+        "className": "",
+        "data": {
+          "sourceHandle": {
+            "dataType": "ChatInput",
+            "id": "submission",
+            "name": "message",
+            "output_types": [
+              "Message"
+            ]
+          },
+          "targetHandle": {
+            "fieldName": "submission",
+            "id": "parse_lead",
+            "inputTypes": [
+              "Message",
+              "Data"
+            ],
+            "type": "other"
+          }
+        },
+        "id": "reactflow__edge-submission{\u0153dataType\u0153:\u0153ChatInput\u0153,\u0153id\u0153:\u0153submission\u0153,\u0153name\u0153:\u0153message\u0153,\u0153output_types\u0153:[\u0153Message\u0153]}-parse_lead{\u0153fieldName\u0153:\u0153submission\u0153,\u0153id\u0153:\u0153parse_lead\u0153,\u0153inputTypes\u0153:[\u0153Message\u0153,\u0153Data\u0153],\u0153type\u0153:\u0153other\u0153}",
+        "source": "submission",
+        "sourceHandle": "{\u0153dataType\u0153: \u0153ChatInput\u0153, \u0153id\u0153: \u0153submission\u0153, \u0153name\u0153: \u0153message\u0153, \u0153output_types\u0153: [\u0153Message\u0153]}",
+        "target": "parse_lead",
+        "targetHandle": "{\u0153fieldName\u0153: \u0153submission\u0153, \u0153id\u0153: \u0153parse_lead\u0153, \u0153inputTypes\u0153: [\u0153Message\u0153, \u0153Data\u0153], \u0153type\u0153: \u0153other\u0153}"
+      },
+      {
+        "animated": false,
+        "className": "",
+        "data": {
+          "sourceHandle": {
+            "dataType": "LeadFlowParseLead",
+            "id": "parse_lead",
+            "name": "lead",
+            "output_types": [
+              "JSON"
+            ]
+          },
+          "targetHandle": {
+            "fieldName": "lead",
+            "id": "buyer_enrichment",
+            "inputTypes": [
+              "Data",
+              "JSON"
+            ],
+            "type": "other"
+          }
+        },
+        "id": "reactflow__edge-parse_lead{\u0153dataType\u0153:\u0153LeadFlowParseLead\u0153,\u0153id\u0153:\u0153parse_lead\u0153,\u0153name\u0153:\u0153lead\u0153,\u0153output_types\u0153:[\u0153JSON\u0153]}-buyer_enrichment{\u0153fieldName\u0153:\u0153lead\u0153,\u0153id\u0153:\u0153buyer_enrichment\u0153,\u0153inputTypes\u0153:[\u0153Data\u0153,\u0153JSON\u0153],\u0153type\u0153:\u0153other\u0153}",
+        "source": "parse_lead",
+        "sourceHandle": "{\u0153dataType\u0153: \u0153LeadFlowParseLead\u0153, \u0153id\u0153: \u0153parse_lead\u0153, \u0153name\u0153: \u0153lead\u0153, \u0153output_types\u0153: [\u0153JSON\u0153]}",
+        "target": "buyer_enrichment",
+        "targetHandle": "{\u0153fieldName\u0153: \u0153lead\u0153, \u0153id\u0153: \u0153buyer_enrichment\u0153, \u0153inputTypes\u0153: [\u0153Data\u0153, \u0153JSON\u0153], \u0153type\u0153: \u0153other\u0153}"
+      },
+      {
+        "animated": false,
+        "className": "",
+        "data": {
+          "sourceHandle": {
+            "dataType": "LeadFlowParseLead",
+            "id": "parse_lead",
+            "name": "lead",
+            "output_types": [
+              "JSON"
+            ]
+          },
+          "targetHandle": {
+            "fieldName": "lead",
+            "id": "note_signals",
+            "inputTypes": [
+              "Data",
+              "JSON"
+            ],
+            "type": "other"
+          }
+        },
+        "id": "reactflow__edge-parse_lead{\u0153dataType\u0153:\u0153LeadFlowParseLead\u0153,\u0153id\u0153:\u0153parse_lead\u0153,\u0153name\u0153:\u0153lead\u0153,\u0153output_types\u0153:[\u0153JSON\u0153]}-note_signals{\u0153fieldName\u0153:\u0153lead\u0153,\u0153id\u0153:\u0153note_signals\u0153,\u0153inputTypes\u0153:[\u0153Data\u0153,\u0153JSON\u0153],\u0153type\u0153:\u0153other\u0153}",
+        "source": "parse_lead",
+        "sourceHandle": "{\u0153dataType\u0153: \u0153LeadFlowParseLead\u0153, \u0153id\u0153: \u0153parse_lead\u0153, \u0153name\u0153: \u0153lead\u0153, \u0153output_types\u0153: [\u0153JSON\u0153]}",
+        "target": "note_signals",
+        "targetHandle": "{\u0153fieldName\u0153: \u0153lead\u0153, \u0153id\u0153: \u0153note_signals\u0153, \u0153inputTypes\u0153: [\u0153Data\u0153, \u0153JSON\u0153], \u0153type\u0153: \u0153other\u0153}"
+      }
+    ],
+    "nodes": [
+      {
+        "data": {
+          "description": "Get chat inputs from the Playground.",
+          "display_name": "Chat Input",
+          "id": "submission",
+          "node": {
+            "base_classes": [
+              "Message"
+            ],
+            "beta": false,
+            "conditional_paths": [],
+            "custom_fields": {},
+            "description": "Get chat inputs from the Playground.",
+            "display_name": "Chat Input",
+            "documentation": "https://docs.langflow.org/chat-input-and-output",
+            "edited": false,
+            "field_order": [],
+            "frozen": false,
+            "icon": "MessagesSquare",
+            "legacy": false,
+            "metadata": {},
+            "minimized": true,
+            "output_types": [],
+            "outputs": [
+              {
+                "allows_loop": false,
+                "cache": true,
+                "display_name": "Chat Message",
+                "group_outputs": false,
+                "method": "message_response",
+                "name": "message",
+                "selected": "Message",
+                "tool_mode": true,
+                "types": [
+                  "Message"
+                ],
+                "value": "__UNDEFINED__"
+              }
+            ],
+            "pinned": false,
+            "template": {
+              "_type": "Component",
+              "code": {
+                "advanced": true,
+                "api_editable": false,
+                "dynamic": true,
+                "fileTypes": [],
+                "file_path": "",
+                "info": "",
+                "list": false,
+                "load_from_db": false,
+                "multiline": true,
+                "name": "code",
+                "password": false,
+                "placeholder": "",
+                "required": true,
+                "show": true,
+                "title_case": false,
+                "type": "code",
+                "value": "from lfx.base.data.utils import IMG_FILE_TYPES, TEXT_FILE_TYPES\nfrom lfx.base.io.chat import ChatComponent\nfrom lfx.inputs.inputs import BoolInput\nfrom lfx.io import (\n    DropdownInput,\n    FileInput,\n    MessageTextInput,\n    MultilineInput,\n    Output,\n)\nfrom lfx.schema.image import get_file_paths\nfrom lfx.schema.message import Message\nfrom lfx.services.deps import get_settings_service\nfrom lfx.utils.constants import (\n    MESSAGE_SENDER_AI,\n    MESSAGE_SENDER_NAME_USER,\n    MESSAGE_SENDER_USER,\n)\nfrom lfx.utils.file_path_security import (\n    component_file_access_scopes,\n    enforce_local_file_access,\n    is_local_file_access_restricted,\n)\n\n\nclass ChatInput(ChatComponent):\n    display_name = \"Chat Input\"\n    description = \"Get chat inputs from the Playground.\"\n    documentation: str = \"https://docs.langflow.org/chat-input-and-output\"\n    icon = \"MessagesSquare\"\n    name = \"ChatInput\"\n    minimized = True\n\n    inputs = [\n        MultilineInput(\n            name=\"input_value\",\n            display_name=\"Input Text\",\n            value=\"\",\n            info=\"Message to be passed as input.\",\n            input_types=[],\n        ),\n        BoolInput(\n            name=\"should_store_message\",\n            display_name=\"Store Messages\",\n            info=\"Store the message in the history.\",\n            value=True,\n            advanced=True,\n        ),\n        DropdownInput(\n            name=\"sender\",\n            display_name=\"Sender Type\",\n            options=[MESSAGE_SENDER_AI, MESSAGE_SENDER_USER],\n            value=MESSAGE_SENDER_USER,\n            info=\"Type of sender.\",\n            advanced=True,\n        ),\n        MessageTextInput(\n            name=\"sender_name\",\n            display_name=\"Sender Name\",\n            info=\"Name of the sender.\",\n            value=MESSAGE_SENDER_NAME_USER,\n            advanced=True,\n        ),\n        MessageTextInput(\n            name=\"session_id\",\n            display_name=\"Session ID\",\n            info=\"The session ID of the chat. If empty, the current session ID parameter will be used.\",\n            advanced=True,\n        ),\n        MessageTextInput(\n            name=\"context_id\",\n            display_name=\"Context ID\",\n            info=\"The context ID of the chat. Adds an extra layer to the local memory.\",\n            value=\"\",\n            advanced=True,\n        ),\n        FileInput(\n            name=\"files\",\n            display_name=\"Files\",\n            file_types=TEXT_FILE_TYPES + IMG_FILE_TYPES,\n            info=\"Files to be sent with the message.\",\n            advanced=True,\n            is_list=True,\n            temp_file=True,\n        ),\n    ]\n    outputs = [\n        Output(display_name=\"Chat Message\", name=\"message\", method=\"message_response\"),\n    ]\n\n    async def message_response(self) -> Message:\n        # Ensure files is a list and filter out empty/None values\n        files = self.files if self.files else []\n        if files and not isinstance(files, list):\n            files = [files]\n        # Filter out None/empty values\n        files = [f for f in files if f is not None and f != \"\"]\n\n        # Build endpoints inject caller-controlled file references directly into\n        # ChatInput. Resolve and validate local references before the Message can\n        # later read them while constructing model attachment content.\n        if files:\n            settings_service = get_settings_service()\n            storage_type = getattr(getattr(settings_service, \"settings\", None), \"storage_type\", \"local\")\n            # The storage factory falls back to local storage for unsupported\n            # values, so only the explicitly configured S3 backend may bypass\n            # filesystem containment.\n            if str(storage_type).lower() != \"s3\" and is_local_file_access_restricted():\n                scope_ids = list(component_file_access_scopes(self))\n                # Public executions replace graph.flow_id with a per-visitor\n                # virtual ID. Only the server-populated source provenance may\n                # restore the already-validated public attachment namespace.\n                source_flow_id = getattr(self.graph, \"source_flow_id\", None)\n                if source_flow_id:\n                    scope_ids.append(source_flow_id)\n                for file_path in get_file_paths(files):\n                    enforce_local_file_access(file_path, scope_ids=scope_ids)\n\n        session_id = self.session_id or self.graph.session_id or \"\"\n        message = await Message.create(\n            text=self.input_value,\n            sender=self.sender,\n            sender_name=self.sender_name,\n            session_id=session_id,\n            context_id=self.context_id,\n            files=files,\n        )\n        if session_id and isinstance(message, Message) and self.should_store_message:\n            stored_message = await self.send_message(\n                message,\n            )\n            self.message.value = stored_message\n            message = stored_message\n\n        self.status = message\n        return message\n"
+              },
+              "context_id": {
+                "_input_type": "MessageTextInput",
+                "advanced": true,
+                "api_editable": false,
+                "display_name": "Context ID",
+                "dynamic": false,
+                "info": "The context ID of the chat. Adds an extra layer to the local memory.",
+                "input_types": [
+                  "Message"
+                ],
+                "list": false,
+                "list_add_label": "Add More",
+                "load_from_db": false,
+                "name": "context_id",
+                "override_skip": false,
+                "placeholder": "",
+                "required": false,
+                "show": true,
+                "title_case": false,
+                "tool_mode": false,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "track_in_telemetry": false,
+                "type": "str",
+                "value": ""
+              },
+              "files": {
+                "_input_type": "FileInput",
+                "advanced": true,
+                "api_editable": false,
+                "display_name": "Files",
+                "dynamic": false,
+                "fileTypes": [
+                  "csv",
+                  "json",
+                  "pdf",
+                  "txt",
+                  "md",
+                  "mdx",
+                  "yaml",
+                  "yml",
+                  "xml",
+                  "html",
+                  "htm",
+                  "docx",
+                  "py",
+                  "sh",
+                  "sql",
+                  "js",
+                  "ts",
+                  "tsx",
+                  "jpg",
+                  "jpeg",
+                  "png",
+                  "bmp",
+                  "image"
+                ],
+                "file_path": "",
+                "info": "Files to be sent with the message.",
+                "list": true,
+                "list_add_label": "Add More",
+                "name": "files",
+                "override_skip": false,
+                "placeholder": "",
+                "required": false,
+                "show": true,
+                "temp_file": true,
+                "title_case": false,
+                "tool_mode": false,
+                "trace_as_metadata": true,
+                "track_in_telemetry": false,
+                "type": "file",
+                "value": ""
+              },
+              "input_value": {
+                "_input_type": "MultilineInput",
+                "advanced": false,
+                "ai_enabled": false,
+                "api_editable": false,
+                "copy_field": false,
+                "display_name": "Input Text",
+                "dynamic": false,
+                "info": "Message to be passed as input.",
+                "input_types": [],
+                "list": false,
+                "list_add_label": "Add More",
+                "load_from_db": false,
+                "multiline": true,
+                "name": "input_value",
+                "override_skip": false,
+                "password": false,
+                "placeholder": "",
+                "required": false,
+                "show": true,
+                "title_case": false,
+                "tool_mode": false,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "track_in_telemetry": false,
+                "type": "str",
+                "value": ""
+              },
+              "sender": {
+                "_input_type": "DropdownInput",
+                "advanced": true,
+                "api_editable": false,
+                "combobox": false,
+                "dialog_inputs": {},
+                "display_name": "Sender Type",
+                "dynamic": false,
+                "external_options": {},
+                "info": "Type of sender.",
+                "name": "sender",
+                "options": [
+                  "Machine",
+                  "User"
+                ],
+                "options_metadata": [],
+                "override_skip": false,
+                "placeholder": "",
+                "required": false,
+                "show": true,
+                "title_case": false,
+                "toggle": false,
+                "tool_mode": false,
+                "trace_as_metadata": true,
+                "track_in_telemetry": true,
+                "type": "str",
+                "value": "User"
+              },
+              "sender_name": {
+                "_input_type": "MessageTextInput",
+                "advanced": true,
+                "api_editable": false,
+                "display_name": "Sender Name",
+                "dynamic": false,
+                "info": "Name of the sender.",
+                "input_types": [
+                  "Message"
+                ],
+                "list": false,
+                "list_add_label": "Add More",
+                "load_from_db": false,
+                "name": "sender_name",
+                "override_skip": false,
+                "placeholder": "",
+                "required": false,
+                "show": true,
+                "title_case": false,
+                "tool_mode": false,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "track_in_telemetry": false,
+                "type": "str",
+                "value": "User"
+              },
+              "session_id": {
+                "_input_type": "MessageTextInput",
+                "advanced": true,
+                "api_editable": false,
+                "display_name": "Session ID",
+                "dynamic": false,
+                "info": "The session ID of the chat. If empty, the current session ID parameter will be used.",
+                "input_types": [
+                  "Message"
+                ],
+                "list": false,
+                "list_add_label": "Add More",
+                "load_from_db": false,
+                "name": "session_id",
+                "override_skip": false,
+                "placeholder": "",
+                "required": false,
+                "show": true,
+                "title_case": false,
+                "tool_mode": false,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "track_in_telemetry": false,
+                "type": "str",
+                "value": ""
+              },
+              "should_store_message": {
+                "_input_type": "BoolInput",
+                "advanced": true,
+                "api_editable": false,
+                "display_name": "Store Messages",
+                "dynamic": false,
+                "info": "Store the message in the history.",
+                "list": false,
+                "list_add_label": "Add More",
+                "name": "should_store_message",
+                "override_skip": false,
+                "placeholder": "",
+                "required": false,
+                "show": true,
+                "title_case": false,
+                "tool_mode": false,
+                "trace_as_metadata": true,
+                "track_in_telemetry": true,
+                "type": "bool",
+                "value": true
+              }
+            },
+            "tool_mode": false
+          },
+          "type": "ChatInput"
+        },
+        "id": "submission",
+        "position": {
+          "x": 0,
+          "y": 200
+        },
+        "type": "genericNode"
+      },
+      {
+        "data": {
+          "description": "Display a chat message in the Playground.",
+          "display_name": "Chat Output",
+          "id": "assessment",
+          "node": {
+            "base_classes": [
+              "Message"
+            ],
+            "beta": false,
+            "conditional_paths": [],
+            "custom_fields": {},
+            "description": "Display a chat message in the Playground.",
+            "display_name": "Chat Output",
+            "documentation": "https://docs.langflow.org/chat-input-and-output",
+            "edited": false,
+            "field_order": [],
+            "frozen": false,
+            "icon": "MessagesSquare",
+            "legacy": false,
+            "metadata": {},
+            "minimized": true,
+            "output_types": [],
+            "outputs": [
+              {
+                "allows_loop": false,
+                "cache": true,
+                "display_name": "Output Message",
+                "group_outputs": false,
+                "method": "message_response",
+                "name": "message",
+                "selected": "Message",
+                "tool_mode": true,
+                "types": [
+                  "Message"
+                ],
+                "value": "__UNDEFINED__"
+              }
+            ],
+            "pinned": false,
+            "template": {
+              "_type": "Component",
+              "clean_data": {
+                "_input_type": "BoolInput",
+                "advanced": true,
+                "api_editable": false,
+                "display_name": "Basic Clean Data",
+                "dynamic": false,
+                "info": "Whether to clean data before converting to string.",
+                "list": false,
+                "list_add_label": "Add More",
+                "name": "clean_data",
+                "override_skip": false,
+                "placeholder": "",
+                "required": false,
+                "show": true,
+                "title_case": false,
+                "tool_mode": false,
+                "trace_as_metadata": true,
+                "track_in_telemetry": true,
+                "type": "bool",
+                "value": true
+              },
+              "code": {
+                "advanced": true,
+                "api_editable": false,
+                "dynamic": true,
+                "fileTypes": [],
+                "file_path": "",
+                "info": "",
+                "list": false,
+                "load_from_db": false,
+                "multiline": true,
+                "name": "code",
+                "password": false,
+                "placeholder": "",
+                "required": true,
+                "show": true,
+                "title_case": false,
+                "type": "code",
+                "value": "from collections.abc import Generator\nfrom typing import Any\n\nimport orjson\nfrom fastapi.encoders import jsonable_encoder\n\nfrom lfx.base.io.chat import ChatComponent\nfrom lfx.helpers.data import safe_convert\nfrom lfx.inputs.inputs import BoolInput, DropdownInput, HandleInput, MessageTextInput\nfrom lfx.schema.data import Data\nfrom lfx.schema.dataframe import DataFrame\nfrom lfx.schema.message import Message\nfrom lfx.schema.properties import Source\nfrom lfx.template.field.base import Output\nfrom lfx.utils.constants import (\n    MESSAGE_SENDER_AI,\n    MESSAGE_SENDER_NAME_AI,\n    MESSAGE_SENDER_USER,\n)\n\n\nclass ChatOutput(ChatComponent):\n    display_name = \"Chat Output\"\n    description = \"Display a chat message in the Playground.\"\n    documentation: str = \"https://docs.langflow.org/chat-input-and-output\"\n    icon = \"MessagesSquare\"\n    name = \"ChatOutput\"\n    minimized = True\n\n    inputs = [\n        HandleInput(\n            name=\"input_value\",\n            display_name=\"Inputs\",\n            info=\"Message to be passed as output.\",\n            input_types=[\"Data\", \"JSON\", \"DataFrame\", \"Table\", \"Message\"],\n            required=True,\n        ),\n        BoolInput(\n            name=\"should_store_message\",\n            display_name=\"Store Messages\",\n            info=\"Store the message in the history.\",\n            value=True,\n            advanced=True,\n        ),\n        DropdownInput(\n            name=\"sender\",\n            display_name=\"Sender Type\",\n            options=[MESSAGE_SENDER_AI, MESSAGE_SENDER_USER],\n            value=MESSAGE_SENDER_AI,\n            advanced=True,\n            info=\"Type of sender.\",\n        ),\n        MessageTextInput(\n            name=\"sender_name\",\n            display_name=\"Sender Name\",\n            info=\"Name of the sender.\",\n            value=MESSAGE_SENDER_NAME_AI,\n            advanced=True,\n        ),\n        MessageTextInput(\n            name=\"session_id\",\n            display_name=\"Session ID\",\n            info=\"The session ID of the chat. If empty, the current session ID parameter will be used.\",\n            advanced=True,\n        ),\n        MessageTextInput(\n            name=\"context_id\",\n            display_name=\"Context ID\",\n            info=\"The context ID of the chat. Adds an extra layer to the local memory.\",\n            value=\"\",\n            advanced=True,\n        ),\n        MessageTextInput(\n            name=\"data_template\",\n            display_name=\"Data Template\",\n            value=\"{text}\",\n            advanced=True,\n            info=\"Template to convert Data to Text. If left empty, it will be dynamically set to the Data's text key.\",\n        ),\n        BoolInput(\n            name=\"clean_data\",\n            display_name=\"Basic Clean Data\",\n            value=True,\n            advanced=True,\n            info=\"Whether to clean data before converting to string.\",\n        ),\n    ]\n    outputs = [\n        Output(\n            display_name=\"Output Message\",\n            name=\"message\",\n            method=\"message_response\",\n        ),\n    ]\n\n    def _build_source(self, id_: str | None, display_name: str | None, source: str | None) -> Source:\n        source_dict = {}\n        if id_:\n            source_dict[\"id\"] = id_\n        if display_name:\n            source_dict[\"display_name\"] = display_name\n        if source:\n            # Handle case where source is a ChatOpenAI object\n            if hasattr(source, \"model_name\"):\n                source_dict[\"source\"] = source.model_name\n            elif hasattr(source, \"model\"):\n                source_dict[\"source\"] = str(source.model)\n            else:\n                source_dict[\"source\"] = str(source)\n        return Source(**source_dict)\n\n    async def message_response(self) -> Message:\n        # First convert the input to string if needed\n        text = self.convert_to_string()\n\n        # Get source properties\n        source, _, display_name, source_id = self.get_properties_from_source_component()\n\n        # Create or use existing Message object\n        if isinstance(self.input_value, Message) and not self.is_connected_to_chat_input():\n            message = self.input_value\n            # Update message properties\n            message.text = text\n            # Preserve existing session_id from the incoming message if it exists\n            existing_session_id = message.session_id\n        else:\n            message = Message(text=text)\n            existing_session_id = None\n\n        # Set message properties\n        message.sender = self.sender\n        message.sender_name = self.sender_name\n        # Preserve session_id from incoming message, or use component/graph session_id\n        message.session_id = (\n            self.session_id or existing_session_id or (self.graph.session_id if hasattr(self, \"graph\") else None) or \"\"\n        )\n        message.context_id = self.context_id\n        message.flow_id = self.graph.flow_id if hasattr(self, \"graph\") else None\n        message.properties.source = self._build_source(source_id, display_name, source)\n\n        # Store message if needed\n        if message.session_id and self.should_store_message:\n            stored_message = await self.send_message(message)\n            self.message.value = stored_message\n            message = stored_message\n\n        # Set accumulated token usage from all upstream LLM vertices.\n        # This must happen AFTER send_message() because streaming captures\n        # usage from chunks and would overwrite accumulated totals.\n        if hasattr(self, \"_vertex\") and self._vertex is not None:\n            accumulated_usage = self._vertex._accumulate_upstream_token_usage()  # noqa: SLF001\n            if accumulated_usage:\n                message.properties.usage = accumulated_usage\n                if self.should_store_message and message.get_id():\n                    message = await self._update_stored_message(message)\n                    await self._send_message_event(message, id_=message.get_id())\n\n        self.status = message\n        return message\n\n    def _serialize_data(self, data: Data) -> str:\n        \"\"\"Serialize Data object to JSON string.\"\"\"\n        # Convert data.data to JSON-serializable format\n        serializable_data = jsonable_encoder(data.data)\n        # Serialize with orjson, enabling pretty printing with indentation\n        json_bytes = orjson.dumps(serializable_data, option=orjson.OPT_INDENT_2)\n        # Convert bytes to string and wrap in Markdown code blocks\n        return \"```json\\n\" + json_bytes.decode(\"utf-8\") + \"\\n```\"\n\n    def _validate_input(self) -> None:\n        \"\"\"Validate the input data and raise ValueError if invalid.\"\"\"\n        if self.input_value is None:\n            msg = \"Input data cannot be None\"\n            raise ValueError(msg)\n        if isinstance(self.input_value, list) and not all(\n            isinstance(item, Message | Data | DataFrame | str) for item in self.input_value\n        ):\n            invalid_types = [\n                type(item).__name__\n                for item in self.input_value\n                if not isinstance(item, Message | Data | DataFrame | str)\n            ]\n            msg = f\"Expected Data or DataFrame or Message or str, got {invalid_types}\"\n            raise TypeError(msg)\n        if not isinstance(\n            self.input_value,\n            Message | Data | DataFrame | str | list | Generator | type(None),\n        ):\n            type_name = type(self.input_value).__name__\n            msg = f\"Expected Data or DataFrame or Message or str, Generator or None, got {type_name}\"\n            raise TypeError(msg)\n\n    def convert_to_string(self) -> str | Generator[Any, None, None]:\n        \"\"\"Convert input data to string with proper error handling.\"\"\"\n        self._validate_input()\n        clean_data: bool = getattr(self, \"clean_data\", False)\n        if isinstance(self.input_value, list):\n            return \"\\n\".join([safe_convert(item, clean_data=clean_data) for item in self.input_value])\n        if isinstance(self.input_value, Generator):\n            return self.input_value\n        return safe_convert(self.input_value, clean_data=clean_data)\n"
+              },
+              "context_id": {
+                "_input_type": "MessageTextInput",
+                "advanced": true,
+                "api_editable": false,
+                "display_name": "Context ID",
+                "dynamic": false,
+                "info": "The context ID of the chat. Adds an extra layer to the local memory.",
+                "input_types": [
+                  "Message"
+                ],
+                "list": false,
+                "list_add_label": "Add More",
+                "load_from_db": false,
+                "name": "context_id",
+                "override_skip": false,
+                "placeholder": "",
+                "required": false,
+                "show": true,
+                "title_case": false,
+                "tool_mode": false,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "track_in_telemetry": false,
+                "type": "str",
+                "value": ""
+              },
+              "data_template": {
+                "_input_type": "MessageTextInput",
+                "advanced": true,
+                "api_editable": false,
+                "display_name": "Data Template",
+                "dynamic": false,
+                "info": "Template to convert Data to Text. If left empty, it will be dynamically set to the Data's text key.",
+                "input_types": [
+                  "Message"
+                ],
+                "list": false,
+                "list_add_label": "Add More",
+                "load_from_db": false,
+                "name": "data_template",
+                "override_skip": false,
+                "placeholder": "",
+                "required": false,
+                "show": true,
+                "title_case": false,
+                "tool_mode": false,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "track_in_telemetry": false,
+                "type": "str",
+                "value": "{text}"
+              },
+              "input_value": {
+                "_input_type": "HandleInput",
+                "advanced": false,
+                "api_editable": false,
+                "display_name": "Inputs",
+                "dynamic": false,
+                "info": "Message to be passed as output.",
+                "input_types": [
+                  "Data",
+                  "JSON",
+                  "DataFrame",
+                  "Table",
+                  "Message"
+                ],
+                "list": false,
+                "list_add_label": "Add More",
+                "name": "input_value",
+                "override_skip": false,
+                "placeholder": "",
+                "required": true,
+                "show": true,
+                "title_case": false,
+                "trace_as_metadata": true,
+                "track_in_telemetry": false,
+                "type": "other",
+                "value": ""
+              },
+              "sender": {
+                "_input_type": "DropdownInput",
+                "advanced": true,
+                "api_editable": false,
+                "combobox": false,
+                "dialog_inputs": {},
+                "display_name": "Sender Type",
+                "dynamic": false,
+                "external_options": {},
+                "info": "Type of sender.",
+                "name": "sender",
+                "options": [
+                  "Machine",
+                  "User"
+                ],
+                "options_metadata": [],
+                "override_skip": false,
+                "placeholder": "",
+                "required": false,
+                "show": true,
+                "title_case": false,
+                "toggle": false,
+                "tool_mode": false,
+                "trace_as_metadata": true,
+                "track_in_telemetry": true,
+                "type": "str",
+                "value": "Machine"
+              },
+              "sender_name": {
+                "_input_type": "MessageTextInput",
+                "advanced": true,
+                "api_editable": false,
+                "display_name": "Sender Name",
+                "dynamic": false,
+                "info": "Name of the sender.",
+                "input_types": [
+                  "Message"
+                ],
+                "list": false,
+                "list_add_label": "Add More",
+                "load_from_db": false,
+                "name": "sender_name",
+                "override_skip": false,
+                "placeholder": "",
+                "required": false,
+                "show": true,
+                "title_case": false,
+                "tool_mode": false,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "track_in_telemetry": false,
+                "type": "str",
+                "value": "AI"
+              },
+              "session_id": {
+                "_input_type": "MessageTextInput",
+                "advanced": true,
+                "api_editable": false,
+                "display_name": "Session ID",
+                "dynamic": false,
+                "info": "The session ID of the chat. If empty, the current session ID parameter will be used.",
+                "input_types": [
+                  "Message"
+                ],
+                "list": false,
+                "list_add_label": "Add More",
+                "load_from_db": false,
+                "name": "session_id",
+                "override_skip": false,
+                "placeholder": "",
+                "required": false,
+                "show": true,
+                "title_case": false,
+                "tool_mode": false,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "track_in_telemetry": false,
+                "type": "str",
+                "value": ""
+              },
+              "should_store_message": {
+                "_input_type": "BoolInput",
+                "advanced": true,
+                "api_editable": false,
+                "display_name": "Store Messages",
+                "dynamic": false,
+                "info": "Store the message in the history.",
+                "list": false,
+                "list_add_label": "Add More",
+                "name": "should_store_message",
+                "override_skip": false,
+                "placeholder": "",
+                "required": false,
+                "show": true,
+                "title_case": false,
+                "tool_mode": false,
+                "trace_as_metadata": true,
+                "track_in_telemetry": true,
+                "type": "bool",
+                "value": true
+              }
+            },
+            "tool_mode": false
+          },
+          "type": "ChatOutput"
+        },
+        "id": "assessment",
+        "position": {
+          "x": 1600,
+          "y": 200
+        },
+        "type": "genericNode"
+      },
+      {
+        "data": {
+          "description": "Rule-based intent score and urgency tier, with the points behind them.",
+          "display_name": "Buyer Score",
+          "id": "buyer_score",
+          "node": {
+            "base_classes": [
+              "Message"
+            ],
+            "beta": false,
+            "conditional_paths": [],
+            "custom_fields": {},
+            "description": "Rule-based intent score and urgency tier, with the points behind them.",
+            "display_name": "Buyer Score",
+            "documentation": "",
+            "edited": false,
+            "field_order": [],
+            "frozen": false,
+            "icon": "gauge",
+            "legacy": false,
+            "metadata": {},
+            "minimized": false,
+            "output_types": [],
+            "outputs": [
+              {
+                "allows_loop": false,
+                "cache": true,
+                "display_name": "Assessment",
+                "group_outputs": false,
+                "method": "assessment_message",
+                "name": "assessment",
+                "selected": "Message",
+                "tool_mode": true,
+                "types": [
+                  "Message"
+                ],
+                "value": "__UNDEFINED__"
+              }
+            ],
+            "pinned": false,
+            "template": {
+              "_type": "Component",
+              "code": {
+                "advanced": true,
+                "api_editable": false,
+                "dynamic": true,
+                "fileTypes": [],
+                "file_path": "",
+                "info": "",
+                "list": false,
+                "load_from_db": false,
+                "multiline": true,
+                "name": "code",
+                "password": false,
+                "placeholder": "",
+                "required": true,
+                "show": true,
+                "title_case": false,
+                "type": "code",
+                "value": "from lfx.custom.custom_component.component import Component\nfrom lfx.io import DataInput, Output\nfrom lfx.schema.message import Message\n\nfrom leadflow.buyer_agent import Enrichment, Extraction, assess\nfrom leadflow.contracts import BehaviorSignals, Firmographics, NoteSignals\nfrom leadflow.models import Lead\n\n\nclass BuyerScoreComponent(Component):\n    display_name = \"Buyer Score\"\n    description = \"Rule-based intent score and urgency tier, with the points behind them.\"\n    icon = \"gauge\"\n    name = \"LeadFlowBuyerScore\"\n\n    inputs = [\n        DataInput(name=\"lead\", display_name=\"Lead\", required=True),\n        DataInput(name=\"enrichment\", display_name=\"Enrichment\", required=True),\n        DataInput(name=\"signals\", display_name=\"Signals\", required=True),\n    ]\n\n    outputs = [Output(display_name=\"Assessment\", name=\"assessment\", method=\"assessment_message\")]\n\n    def assessment_message(self) -> Message:\n        e, s = self.enrichment.data, self.signals.data\n        enrichment = Enrichment(\n            firmographics=Firmographics.model_validate(e[\"firmographics\"]) if e[\"firmographics\"] else None,\n            behavior=BehaviorSignals.model_validate(e[\"behavior\"]) if e[\"behavior\"] else None,\n            tool_status=e[\"tool_status\"],\n        )\n        extraction = Extraction(NoteSignals.model_validate(s[\"signals\"]), s[\"method\"], s[\"llm_status\"])\n        result = assess(Lead.model_validate(self.lead.data), enrichment, extraction)\n        self.status = f\"{result.urgency_tier} ({result.intent_score})\"\n        return Message(text=result.model_dump_json(indent=2))\n"
+              },
+              "enrichment": {
+                "_input_type": "JSONInput",
+                "advanced": false,
+                "api_editable": false,
+                "display_name": "Enrichment",
+                "dynamic": false,
+                "info": "",
+                "input_types": [
+                  "Data",
+                  "JSON"
+                ],
+                "list": false,
+                "list_add_label": "Add More",
+                "name": "enrichment",
+                "override_skip": false,
+                "placeholder": "",
+                "required": true,
+                "show": true,
+                "title_case": false,
+                "tool_mode": false,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "track_in_telemetry": false,
+                "type": "other",
+                "value": ""
+              },
+              "lead": {
+                "_input_type": "JSONInput",
+                "advanced": false,
+                "api_editable": false,
+                "display_name": "Lead",
+                "dynamic": false,
+                "info": "",
+                "input_types": [
+                  "Data",
+                  "JSON"
+                ],
+                "list": false,
+                "list_add_label": "Add More",
+                "name": "lead",
+                "override_skip": false,
+                "placeholder": "",
+                "required": true,
+                "show": true,
+                "title_case": false,
+                "tool_mode": false,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "track_in_telemetry": false,
+                "type": "other",
+                "value": ""
+              },
+              "signals": {
+                "_input_type": "JSONInput",
+                "advanced": false,
+                "api_editable": false,
+                "display_name": "Signals",
+                "dynamic": false,
+                "info": "",
+                "input_types": [
+                  "Data",
+                  "JSON"
+                ],
+                "list": false,
+                "list_add_label": "Add More",
+                "name": "signals",
+                "override_skip": false,
+                "placeholder": "",
+                "required": true,
+                "show": true,
+                "title_case": false,
+                "tool_mode": false,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "track_in_telemetry": false,
+                "type": "other",
+                "value": ""
+              }
+            },
+            "tool_mode": false
+          },
+          "type": "LeadFlowBuyerScore"
+        },
+        "id": "buyer_score",
+        "position": {
+          "x": 1200,
+          "y": 200
+        },
+        "type": "genericNode"
+      },
+      {
+        "data": {
+          "description": "Validate an inbound form submission (JSON) against the Lead schema.",
+          "display_name": "Parse Lead",
+          "id": "parse_lead",
+          "node": {
+            "base_classes": [
+              "JSON"
+            ],
+            "beta": false,
+            "conditional_paths": [],
+            "custom_fields": {},
+            "description": "Validate an inbound form submission (JSON) against the Lead schema.",
+            "display_name": "Parse Lead",
+            "documentation": "",
+            "edited": false,
+            "field_order": [],
+            "frozen": false,
+            "icon": "user-check",
+            "legacy": false,
+            "metadata": {},
+            "minimized": false,
+            "output_types": [],
+            "outputs": [
+              {
+                "allows_loop": false,
+                "cache": true,
+                "display_name": "Lead",
+                "group_outputs": false,
+                "method": "parse_lead",
+                "name": "lead",
+                "selected": "JSON",
+                "tool_mode": true,
+                "types": [
+                  "JSON"
+                ],
+                "value": "__UNDEFINED__"
+              }
+            ],
+            "pinned": false,
+            "template": {
+              "_type": "Component",
+              "code": {
+                "advanced": true,
+                "api_editable": false,
+                "dynamic": true,
+                "fileTypes": [],
+                "file_path": "",
+                "info": "",
+                "list": false,
+                "load_from_db": false,
+                "multiline": true,
+                "name": "code",
+                "password": false,
+                "placeholder": "",
+                "required": true,
+                "show": true,
+                "title_case": false,
+                "type": "code",
+                "value": "import json\n\nfrom lfx.custom.custom_component.component import Component\nfrom lfx.inputs.inputs import HandleInput\nfrom lfx.io import Output\nfrom lfx.schema.data import Data\nfrom lfx.schema.message import Message\n\nfrom leadflow.models import Lead\n\n\nclass ParseLeadComponent(Component):\n    display_name = \"Parse Lead\"\n    description = \"Validate an inbound form submission (JSON) against the Lead schema.\"\n    icon = \"user-check\"\n    name = \"LeadFlowParseLead\"\n\n    inputs = [\n        HandleInput(\n            name=\"submission\",\n            display_name=\"Submission\",\n            info=\"Form submission as JSON text.\",\n            input_types=[\"Message\", \"Data\"],\n            required=True,\n        ),\n    ]\n\n    outputs = [Output(display_name=\"Lead\", name=\"lead\", method=\"parse_lead\")]\n\n    def parse_lead(self) -> Data:\n        value = self.submission\n        if isinstance(value, Message):\n            raw = json.loads(value.text)\n        elif isinstance(value, Data):\n            raw = value.data\n        else:\n            raw = json.loads(value)\n        lead = Lead.model_validate(raw)\n        self.status = f\"{lead.first_name} {lead.last_name}, {lead.company}\"\n        return Data(data=lead.model_dump(mode=\"json\"))\n"
+              },
+              "submission": {
+                "_input_type": "HandleInput",
+                "advanced": false,
+                "api_editable": false,
+                "display_name": "Submission",
+                "dynamic": false,
+                "info": "Form submission as JSON text.",
+                "input_types": [
+                  "Message",
+                  "Data"
+                ],
+                "list": false,
+                "list_add_label": "Add More",
+                "name": "submission",
+                "override_skip": false,
+                "placeholder": "",
+                "required": true,
+                "show": true,
+                "title_case": false,
+                "trace_as_metadata": true,
+                "track_in_telemetry": false,
+                "type": "other",
+                "value": ""
+              }
+            },
+            "tool_mode": false
+          },
+          "type": "LeadFlowParseLead"
+        },
+        "id": "parse_lead",
+        "position": {
+          "x": 400,
+          "y": 200
+        },
+        "type": "genericNode"
+      },
+      {
+        "data": {
+          "description": "Look up firmographics (TheirStack, mocked) and site behavior (PostHog, mocked). Falls back to a company-name search for personal emails or unknown domains.",
+          "display_name": "Buyer Enrichment",
+          "id": "buyer_enrichment",
+          "node": {
+            "base_classes": [
+              "JSON"
+            ],
+            "beta": false,
+            "conditional_paths": [],
+            "custom_fields": {},
+            "description": "Look up firmographics (TheirStack, mocked) and site behavior (PostHog, mocked). Falls back to a company-name search for personal emails or unknown domains.",
+            "display_name": "Buyer Enrichment",
+            "documentation": "",
+            "edited": false,
+            "field_order": [],
+            "frozen": false,
+            "icon": "building-2",
+            "legacy": false,
+            "metadata": {},
+            "minimized": false,
+            "output_types": [],
+            "outputs": [
+              {
+                "allows_loop": false,
+                "cache": true,
+                "display_name": "Enrichment",
+                "group_outputs": false,
+                "method": "enrich",
+                "name": "enrichment",
+                "selected": "JSON",
+                "tool_mode": true,
+                "types": [
+                  "JSON"
+                ],
+                "value": "__UNDEFINED__"
+              }
+            ],
+            "pinned": false,
+            "template": {
+              "_type": "Component",
+              "code": {
+                "advanced": true,
+                "api_editable": false,
+                "dynamic": true,
+                "fileTypes": [],
+                "file_path": "",
+                "info": "",
+                "list": false,
+                "load_from_db": false,
+                "multiline": true,
+                "name": "code",
+                "password": false,
+                "placeholder": "",
+                "required": true,
+                "show": true,
+                "title_case": false,
+                "type": "code",
+                "value": "from functools import lru_cache\n\nfrom lfx.custom.custom_component.component import Component\nfrom lfx.io import DataInput, Output\nfrom lfx.schema.data import Data\n\nfrom leadflow.buyer_agent import BuyerContextAgent\nfrom leadflow.data_loader import load_enrichment\nfrom leadflow.enrichment import MockPostHog, MockTheirStack\nfrom leadflow.models import Lead\n\n\n@lru_cache(maxsize=1)\ndef _agent() -> BuyerContextAgent:\n    rows = load_enrichment()\n    return BuyerContextAgent(MockTheirStack(rows), MockPostHog(rows))\n\n\nclass BuyerEnrichmentComponent(Component):\n    display_name = \"Buyer Enrichment\"\n    description = (\n        \"Look up firmographics (TheirStack, mocked) and site behavior (PostHog, mocked). \"\n        \"Falls back to a company-name search for personal emails or unknown domains.\"\n    )\n    icon = \"building-2\"\n    name = \"LeadFlowBuyerEnrichment\"\n\n    inputs = [DataInput(name=\"lead\", display_name=\"Lead\", required=True)]\n\n    outputs = [Output(display_name=\"Enrichment\", name=\"enrichment\", method=\"enrich\")]\n\n    def enrich(self) -> Data:\n        result = _agent().enrich(Lead.model_validate(self.lead.data))\n        firmographics = result.firmographics.model_dump(mode=\"json\") if result.firmographics else None\n        behavior = result.behavior.model_dump(mode=\"json\") if result.behavior else None\n        found = firmographics[\"industry\"] if firmographics else \"no TheirStack record\"\n        self.status = f\"{found}; PostHog {'found' if behavior else 'no data'}\"\n        return Data(data={\"firmographics\": firmographics, \"behavior\": behavior, \"tool_status\": result.tool_status})\n"
+              },
+              "lead": {
+                "_input_type": "JSONInput",
+                "advanced": false,
+                "api_editable": false,
+                "display_name": "Lead",
+                "dynamic": false,
+                "info": "",
+                "input_types": [
+                  "Data",
+                  "JSON"
+                ],
+                "list": false,
+                "list_add_label": "Add More",
+                "name": "lead",
+                "override_skip": false,
+                "placeholder": "",
+                "required": true,
+                "show": true,
+                "title_case": false,
+                "tool_mode": false,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "track_in_telemetry": false,
+                "type": "other",
+                "value": ""
+              }
+            },
+            "tool_mode": false
+          },
+          "type": "LeadFlowBuyerEnrichment"
+        },
+        "id": "buyer_enrichment",
+        "position": {
+          "x": 800,
+          "y": 0
+        },
+        "type": "genericNode"
+      },
+      {
+        "data": {
+          "description": "Extract deadline, seats, competitor, compliance, and buying stage from the note with Claude. Uses rules when there is no note, no API key, or the call fails.",
+          "display_name": "Note Signals (Claude)",
+          "id": "note_signals",
+          "node": {
+            "base_classes": [
+              "JSON"
+            ],
+            "beta": false,
+            "conditional_paths": [],
+            "custom_fields": {},
+            "description": "Extract deadline, seats, competitor, compliance, and buying stage from the note with Claude. Uses rules when there is no note, no API key, or the call fails.",
+            "display_name": "Note Signals (Claude)",
+            "documentation": "",
+            "edited": false,
+            "field_order": [],
+            "frozen": false,
+            "icon": "Anthropic",
+            "legacy": false,
+            "metadata": {},
+            "minimized": false,
+            "output_types": [],
+            "outputs": [
+              {
+                "allows_loop": false,
+                "cache": true,
+                "display_name": "Signals",
+                "group_outputs": false,
+                "method": "extract",
+                "name": "signals",
+                "selected": "JSON",
+                "tool_mode": true,
+                "types": [
+                  "JSON"
+                ],
+                "value": "__UNDEFINED__"
+              }
+            ],
+            "pinned": false,
+            "template": {
+              "_type": "Component",
+              "api_key": {
+                "_input_type": "SecretStrInput",
+                "advanced": false,
+                "api_editable": false,
+                "display_name": "Anthropic API Key",
+                "dynamic": false,
+                "info": "Leave empty to read ANTHROPIC_API_KEY from the environment or .env.",
+                "input_types": [],
+                "load_from_db": true,
+                "name": "api_key",
+                "override_skip": false,
+                "password": true,
+                "placeholder": "",
+                "required": false,
+                "show": true,
+                "title_case": false,
+                "track_in_telemetry": false,
+                "type": "str",
+                "value": ""
+              },
+              "code": {
+                "advanced": true,
+                "api_editable": false,
+                "dynamic": true,
+                "fileTypes": [],
+                "file_path": "",
+                "info": "",
+                "list": false,
+                "load_from_db": false,
+                "multiline": true,
+                "name": "code",
+                "password": false,
+                "placeholder": "",
+                "required": true,
+                "show": true,
+                "title_case": false,
+                "type": "code",
+                "value": "from lfx.custom.custom_component.component import Component\nfrom lfx.io import DataInput, MessageTextInput, Output, SecretStrInput\nfrom lfx.schema.data import Data\n\nfrom leadflow.buyer_agent import BuyerContextAgent\nfrom leadflow.enrichment import MockPostHog, MockTheirStack\nfrom leadflow.extraction import DEFAULT_MODEL, ClaudeExtractor, claude_from_env\nfrom leadflow.models import Lead\n\n\nclass NoteSignalsComponent(Component):\n    display_name = \"Note Signals (Claude)\"\n    description = (\n        \"Extract deadline, seats, competitor, compliance, and buying stage from the note with Claude. \"\n        \"Uses rules when there is no note, no API key, or the call fails.\"\n    )\n    icon = \"Anthropic\"\n    name = \"LeadFlowNoteSignals\"\n\n    inputs = [\n        DataInput(name=\"lead\", display_name=\"Lead\", required=True),\n        SecretStrInput(\n            name=\"api_key\",\n            display_name=\"Anthropic API Key\",\n            info=\"Leave empty to read ANTHROPIC_API_KEY from the environment or .env.\",\n            required=False,\n        ),\n        MessageTextInput(name=\"model\", display_name=\"Model\", value=DEFAULT_MODEL, advanced=True),\n    ]\n\n    outputs = [Output(display_name=\"Signals\", name=\"signals\", method=\"extract\")]\n\n    def extract(self) -> Data:\n        if self.api_key:\n            import anthropic\n\n            extractor = ClaudeExtractor(client=anthropic.Anthropic(api_key=self.api_key, timeout=15.0), model=self.model)\n        else:\n            extractor = claude_from_env()\n            if extractor is not None and self.model:\n                extractor.model = self.model\n        agent = BuyerContextAgent(MockTheirStack([]), MockPostHog([]), extractor)\n        result = agent.extract(Lead.model_validate(self.lead.data))\n        self.status = f\"{result.method} ({result.llm_status})\"\n        return Data(\n            data={\n                \"signals\": result.signals.model_dump(mode=\"json\"),\n                \"method\": result.method,\n                \"llm_status\": result.llm_status,\n            }\n        )\n"
+              },
+              "lead": {
+                "_input_type": "JSONInput",
+                "advanced": false,
+                "api_editable": false,
+                "display_name": "Lead",
+                "dynamic": false,
+                "info": "",
+                "input_types": [
+                  "Data",
+                  "JSON"
+                ],
+                "list": false,
+                "list_add_label": "Add More",
+                "name": "lead",
+                "override_skip": false,
+                "placeholder": "",
+                "required": true,
+                "show": true,
+                "title_case": false,
+                "tool_mode": false,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "track_in_telemetry": false,
+                "type": "other",
+                "value": ""
+              },
+              "model": {
+                "_input_type": "MessageTextInput",
+                "advanced": true,
+                "api_editable": false,
+                "display_name": "Model",
+                "dynamic": false,
+                "info": "",
+                "input_types": [
+                  "Message"
+                ],
+                "list": false,
+                "list_add_label": "Add More",
+                "load_from_db": false,
+                "name": "model",
+                "override_skip": false,
+                "placeholder": "",
+                "required": false,
+                "show": true,
+                "title_case": false,
+                "tool_mode": false,
+                "trace_as_input": true,
+                "trace_as_metadata": true,
+                "track_in_telemetry": false,
+                "type": "str",
+                "value": "claude-haiku-4-5"
+              }
+            },
+            "tool_mode": false
+          },
+          "type": "LeadFlowNoteSignals"
+        },
+        "id": "note_signals",
+        "position": {
+          "x": 800,
+          "y": 400
+        },
+        "type": "genericNode"
+      }
+    ]
+  },
+  "description": "Enrich the lead, extract note signals with Claude, and score intent with rules.",
+  "id": "5b0c1f9e-4d1a-4b8e-9a51-1eadf10b0a01",
+  "is_component": false,
+  "name": "LeadFlow Buyer Agent"
+}
