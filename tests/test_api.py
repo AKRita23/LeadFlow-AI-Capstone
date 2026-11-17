@@ -1,17 +1,22 @@
 import pytest
 from fastapi.testclient import TestClient
 
-from leadflow.api import app, get_store
-from leadflow.data_loader import load_leads
+from leadflow.api import app, get_buyer_agent, get_store
+from leadflow.buyer_agent import BuyerContextAgent
+from leadflow.data_loader import load_enrichment, load_leads
+from leadflow.enrichment import MockPostHog, MockTheirStack
 from leadflow.store import DecisionStore
 
 client = TestClient(app)
+ROWS = load_enrichment()
+RULES_AGENT = BuyerContextAgent(MockTheirStack(ROWS), MockPostHog(ROWS))
 
 
 @pytest.fixture(autouse=True)
 def store(tmp_path):
     test_store = DecisionStore(tmp_path / "leadflow.db")
     app.dependency_overrides[get_store] = lambda: test_store
+    app.dependency_overrides[get_buyer_agent] = lambda: RULES_AGENT
     yield test_store
     app.dependency_overrides.clear()
 
@@ -134,6 +139,19 @@ def test_new_prospect_returns_its_shortlist():
     assert set(shortlist["rep_ids"]) == {"rep_003", "rep_011", "rep_027", "rep_035", "rep_043"}
     assert shortlist["excluded"] == [["rep_019", "segment"]]
     assert shortlist["after_hours"] is False
+
+
+def test_new_prospect_gets_a_buyer_assessment():
+    buyer = post().json()["buyer"]
+    assert buyer["submission_id"] == "sub_test0001"
+    assert buyer["urgency_tier"] == "High"
+    assert buyer["detected_competitor"] == "Intercom"
+    assert buyer["extraction"] == "rules"
+    assert sum(line["points"] for line in buyer["score_breakdown"]) == buyer["intent_score"]
+
+
+def test_other_outcomes_skip_the_buyer_agent():
+    assert post(company_size="1-15").json()["buyer"] is None
 
 
 @pytest.mark.parametrize(

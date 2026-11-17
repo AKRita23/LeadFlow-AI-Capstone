@@ -1,5 +1,7 @@
 .env
 .venv/
+.venv-langflow/
+*.egg-info/
 __pycache__/
 .pytest_cache/
 *.db

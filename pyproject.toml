@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "leadflow"
+version = "0.3.0"
+description = "LeadFlow AI: inbound lead triage and routing for BeaconDesk."
+requires-python = ">=3.9"
+dependencies = [
+    "anthropic>=0.40",
+    "openpyxl>=3.1",
+    "pandas>=2.0",
+    "pydantic>=2.6",
+    "python-dotenv>=1.0",
+]
+
+[tool.setuptools]
+packages = ["leadflow"]
