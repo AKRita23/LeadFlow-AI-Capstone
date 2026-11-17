@@ -1,4 +1,4 @@
-"""Load the LeadFlow mock dataset from Excel and clean known data-entry issues.
+"""Load the LeadFlow mock dataset and clean known data-entry issues.
 
 Fixes applied while loading:
 - Company sizes such as "1-15" that Excel auto-converted to dates are restored.
@@ -7,15 +7,21 @@ Fixes applied while loading:
 Each lead is built through the Lead model, so the dataset gets the same
 validation as API submissions (including phone normalisation to "+<digits>").
 """
+import csv
 import datetime as dt
 from pathlib import Path
-from typing import Any, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import pandas as pd
 
-from leadflow.models import Lead, LeadExpectation, Rep
+from leadflow.models import Account, AccountRecordType, Lead, LeadExpectation, Rep, TerritoryRule
 
-DATASET_PATH = Path(__file__).resolve().parent.parent / "data" / "LeadFlow AI mock dataset.xlsx"
+DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+DATASET_PATH = DATA_DIR / "LeadFlow AI mock dataset.xlsx"
+ACCOUNTS_PATH = DATA_DIR / "mock_accounts.csv"
+TERRITORIES_PATH = DATA_DIR / "territories.csv"
+
+TerritoryMap = Dict[Tuple[str, Optional[str]], TerritoryRule]
 
 BUYER_SHEET = "Mock dataset - Buyer Context br"
 REP_SHEET = "Mock dataset - CRM & Rep Calend"
@@ -79,6 +85,57 @@ def load_leads(path: Path = DATASET_PATH) -> Tuple[List[Lead], List[LeadExpectat
             )
         )
     return leads, expectations
+
+
+def load_accounts(path: Path = ACCOUNTS_PATH) -> List[Account]:
+    """Return the mock CRM accounts used by the existing-account gate.
+
+    The workbook has no account or opportunity rows. This table is the
+    stand-in. None of its domains appear on the 20 form submissions, so those
+    leads keep the flow path written in the workbook.
+    """
+    accounts = []
+    with path.open(newline="") as handle:
+        for row in csv.DictReader(handle):
+            accounts.append(
+                Account(
+                    account_id=row["account_id"],
+                    scenario=row["scenario"],
+                    account_name=row["account_name"],
+                    domain=row["domain"].strip().lower(),
+                    country=row["country"].strip().upper(),
+                    segment=row["segment"],
+                    record_type=_record_type(row["record_type"]),
+                    owner_rep_id=row["owner_rep_id"].strip() or None,
+                    opportunity_name=row["opportunity_name"].strip() or None,
+                    opportunity_stage=row["opportunity_stage"].strip() or None,
+                )
+            )
+    return accounts
+
+
+def load_territories(path: Path = TERRITORIES_PATH) -> TerritoryMap:
+    """Return territory and language by (country, state). state is None outside the US."""
+    territories: TerritoryMap = {}
+    with path.open(newline="") as handle:
+        for row in csv.DictReader(handle):
+            rule = TerritoryRule(
+                country=row["country"].strip().upper(),
+                state=row["state"].strip().upper() or None,
+                territory=row["territory"].strip(),
+                language=row["language"].strip().lower(),
+            )
+            key = (rule.country, rule.state)
+            if key in territories:
+                raise ValueError(f"duplicate territory row for {key}")
+            territories[key] = rule
+    return territories
+
+
+def _record_type(value: str) -> AccountRecordType:
+    if value not in ("Customer", "Open Opportunity", "Closed Lost"):
+        raise ValueError(f"unknown account record type: {value}")
+    return value
 
 
 def load_reps(path: Path = DATASET_PATH) -> List[Rep]:

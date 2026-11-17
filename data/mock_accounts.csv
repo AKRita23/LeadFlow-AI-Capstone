@@ -1,0 +1,15 @@
+account_id,scenario,account_name,domain,country,segment,record_type,owner_rep_id,opportunity_name,opportunity_stage
+acc_harborpay,clear_customer,HarborPay,harborpay.com,US,Mid-Market,Customer,rep_002,,
+acc_nimbus,clear_open_opportunity,Nimbus Clinic,nimbusclinic.com,US,Mid-Market,Open Opportunity,rep_001,Patient chat rollout,Evaluation
+acc_lumen,same_owner_expansion,Lumen Logistics,lumenlogistics.de,DE,Enterprise,Customer,rep_004,,
+acc_lumen_exp,same_owner_expansion,Lumen Logistics,lumenlogistics.de,DE,Enterprise,Open Opportunity,rep_004,DACH expansion,Proposal
+acc_atlas_na,ambiguous_two_accounts,Atlas Group North America,atlasgroup.com,US,Enterprise,Customer,rep_009,,
+acc_atlas_eu,ambiguous_two_accounts,Atlas Group Europe,atlasgroup.com,GB,Enterprise,Customer,rep_038,,
+acc_bright,ambiguous_split_opportunity,BrightRetail,brightretail.com,US,Mid-Market,Customer,rep_042,,
+acc_bright_opp,ambiguous_split_opportunity,BrightRetail,brightretail.com,US,Mid-Market,Open Opportunity,rep_026,Seat expansion,Negotiation
+acc_faded,closed_lost_ignored,FadedChat,fadedchat.io,US,SMB,Closed Lost,rep_025,Initial evaluation,Closed Lost
+acc_orphan,missing_owner,Orphan Stack,orphanstack.io,US,SMB,Customer,,,
+acc_volt,clear_customer,Voltgrid,voltgrid.fr,FR,Mid-Market,Customer,rep_012,,
+acc_andes,clear_customer,Andes Market,andesmarket.cl,CL,Mid-Market,Customer,rep_007,,
+acc_koi,clear_open_opportunity,Koi Systems,koisystems.jp,JP,Enterprise,Open Opportunity,rep_008,AI deflection pilot,Discovery
+acc_heathrow,clear_customer,Heathrow Stay,heathrowstay.co.uk,GB,Mid-Market,Customer,rep_006,,
