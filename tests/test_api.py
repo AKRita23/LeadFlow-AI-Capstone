@@ -1,10 +1,19 @@
 import pytest
 from fastapi.testclient import TestClient
 
-from leadflow.api import app
+from leadflow.api import app, get_store
 from leadflow.data_loader import load_leads
+from leadflow.store import DecisionStore
 
 client = TestClient(app)
+
+
+@pytest.fixture(autouse=True)
+def store(tmp_path):
+    test_store = DecisionStore(tmp_path / "leadflow.db")
+    app.dependency_overrides[get_store] = lambda: test_store
+    yield test_store
+    app.dependency_overrides.clear()
 
 VALID = {
     "submission_id": "sub_test0001",
@@ -37,11 +46,11 @@ def test_health():
     assert client.get("/health").json() == {"status": "ok"}
 
 
-def test_valid_submission_is_received_and_normalised():
+def test_valid_submission_is_triaged_and_normalised():
     response = post()
     assert response.status_code == 202
     body = response.json()
-    assert body["status"] == "received"
+    assert body["status"] == "new_prospect"
     assert body["lead"]["work_email"] == "elena@finpay.es"
     assert body["lead"]["country"] == "ES"
     assert body["lead"]["phone_number"] == "+34915550199"
@@ -104,3 +113,55 @@ def test_every_dataset_lead_passes_schema_validation():
     for lead in leads:
         response = client.post("/leads", json=lead.model_dump())
         assert response.status_code == 202, (lead.submission_id, response.text)
+
+
+def test_dataset_leads_return_their_labeled_path():
+    leads, expectations = load_leads()
+    for lead, expected in zip(leads, expectations):
+        status = client.post("/leads", json=lead.model_dump()).json()["status"]
+        if expected.excluded:
+            assert status in ("self_serve", "dropped"), lead.submission_id
+        else:
+            assert status == "new_prospect", lead.submission_id
+
+
+def test_new_prospect_returns_its_shortlist():
+    body = post().json()
+    shortlist = body["triage"]["shortlist"]
+    assert body["reason"] == "5 eligible reps in EMEA-Southern."
+    assert body["assigned_rep_id"] is None
+    assert shortlist["territory"] == "EMEA-Southern"
+    assert set(shortlist["rep_ids"]) == {"rep_003", "rep_011", "rep_027", "rep_035", "rep_043"}
+    assert shortlist["excluded"] == [["rep_019", "segment"]]
+    assert shortlist["after_hours"] is False
+
+
+@pytest.mark.parametrize(
+    "overrides, status",
+    [
+        ({"work_email": "qa-bot@test-domain.org"}, "dropped"),
+        ({"company_size": "1-15"}, "self_serve"),
+        ({"work_email": "elena@atlasgroup.com"}, "ownership_exception"),
+        ({"country": "ZZ"}, "no_eligible_reps"),
+    ],
+)
+def test_other_outcomes(overrides, status):
+    assert post(**overrides).json()["status"] == status
+
+
+def test_existing_account_returns_owner_and_brief():
+    body = post(work_email="elena@harborpay.com").json()
+    assert body["status"] == "preserve_owner"
+    assert body["assigned_rep_id"] == "rep_002"
+    assert body["triage"]["shortlist"] is None
+    assert body["triage"]["ownership"]["brief"].startswith("Owner kept: Mark Rivera (rep_002).")
+
+
+def test_resubmission_is_a_duplicate(store):
+    post(work_email="elena@harborpay.com")
+    body = post(submission_id="sub_test0002", submitted_at="2026-11-17T11:58:23Z",
+                work_email="elena@harborpay.com").json()
+    assert body["status"] == "duplicate"
+    assert body["triage"]["duplicate_of"] == "sub_test0001"
+    assert body["assigned_rep_id"] == "rep_002"
+    assert store.submission("sub_test0002")["outcome"] == "duplicate"

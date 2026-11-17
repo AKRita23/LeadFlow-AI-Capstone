@@ -13,7 +13,7 @@ An autonomous multi-agent system to continuously evaluate live technographic and
 | Existing account: preserve owner or raise exception | Done (`leadflow/accounts.py`, `leadflow/store.py`) |
 | Filter eligible reps | Done (`leadflow/eligibility.py`) |
 
-`leadflow/pipeline.py` runs these stages in order with `triage()`. It is not yet called from `POST /leads`.
+`leadflow/pipeline.py` runs these stages in order with `triage()`, and `POST /leads` calls it for every valid submission.
 
 ## Triage order
 
@@ -50,7 +50,19 @@ Interactive docs are at http://127.0.0.1:8000/docs. The `POST /leads` form there
 | Endpoint | Behaviour |
 |---|---|
 | `GET /health` | Returns `{"status": "ok"}` |
-| `POST /leads` | Validates a form submission. Returns `202` with `status: "received"` and the normalised lead, or `422` with a per-field error list. |
+| `POST /leads` | Validates and triages a form submission. Returns `202` with the triage outcome as `status`, or `422` with a per-field error list. |
+
+A `202` response has these fields:
+
+| Field | Contents |
+|---|---|
+| `status` | `dropped`, `self_serve`, `duplicate`, `preserve_owner`, `ownership_exception`, `new_prospect`, or `no_eligible_reps` |
+| `reason` | One sentence explaining the outcome |
+| `assigned_rep_id` | The kept owner, or the earlier lead's rep for a duplicate; otherwise null |
+| `lead` | The normalised lead |
+| `triage` | The full result: `ownership` with the handoff brief, or `shortlist` with eligible and excluded reps, plus duplicate links |
+
+Submissions are recorded in `data/leadflow.db`. Delete that file to start over; otherwise resending the same email within 30 days returns `duplicate`.
 
 Example:
 
