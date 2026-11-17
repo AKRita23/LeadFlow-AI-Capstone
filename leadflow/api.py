@@ -5,19 +5,42 @@ Interactive docs:  http://127.0.0.1:8000/docs
 
 Schema validation happens in the Lead model: a submission that breaks the
 Inbound Form schema is rejected with HTTP 422 and a per-field error list.
+A valid submission is triaged by the deterministic stages and recorded in
+SQLite. The response carries the triage outcome as status.
 """
-from fastapi import FastAPI, status
+from functools import lru_cache
+from typing import Optional, Sequence, Tuple
+
+from fastapi import Depends, FastAPI, status
 from pydantic import BaseModel
 
-from leadflow.models import Lead
+from leadflow.data_loader import TerritoryMap, load_accounts, load_reps, load_territories
+from leadflow.models import Account, Lead, Rep, TriageOutcome, TriageResult
+from leadflow.pipeline import triage
+from leadflow.store import DecisionStore
 
-app = FastAPI(title="LeadFlow AI", version="0.1.0")
+app = FastAPI(title="LeadFlow AI", version="0.2.0")
+
+ReferenceData = Tuple[Sequence[Account], Sequence[Rep], TerritoryMap]
+
+
+@lru_cache(maxsize=1)
+def get_reference_data() -> ReferenceData:
+    return load_accounts(), load_reps(), load_territories()
+
+
+@lru_cache(maxsize=1)
+def get_store() -> DecisionStore:
+    return DecisionStore()
 
 
 class SubmissionReceipt(BaseModel):
     submission_id: str
-    status: str
+    status: TriageOutcome
+    reason: str
+    assigned_rep_id: Optional[str]
     lead: Lead
+    triage: TriageResult
 
 
 @app.get("/health")
@@ -26,10 +49,22 @@ def health() -> dict:
 
 
 @app.post("/leads", status_code=status.HTTP_202_ACCEPTED, response_model=SubmissionReceipt)
-def submit_lead(lead: Lead) -> SubmissionReceipt:
-    """Accept an inbound form submission.
+def submit_lead(
+    lead: Lead,
+    reference: ReferenceData = Depends(get_reference_data),
+    store: DecisionStore = Depends(get_store),
+) -> SubmissionReceipt:
+    """Accept an inbound form submission and run deterministic triage.
 
-    The spam, duplicate and existing-account gates are added in later steps;
-    for now a schema-valid submission is acknowledged as received.
+    Every schema-valid submission returns 202, whatever the outcome.
     """
-    return SubmissionReceipt(submission_id=lead.submission_id, status="received", lead=lead)
+    accounts, reps, territories = reference
+    result = triage(lead, accounts, reps, territories, store)
+    return SubmissionReceipt(
+        submission_id=lead.submission_id,
+        status=result.outcome,
+        reason=result.reason,
+        assigned_rep_id=result.assigned_rep_id,
+        lead=lead,
+        triage=result,
+    )
