@@ -1,0 +1,216 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1130 560" width="1130" height="560" role="img" aria-labelledby="t d">
+<title id="t">How a lead flows through LeadFlow AI</title>
+<desc id="d">Animated diagram. Example leads move from the web form through schema check, screening, the duplicate check, the existing-account check, and the rep filter. New prospects go to the buyer agent and capacity service in parallel, then the routing agent, validation and commit, and the rep handoff. Other leads stop at dropped, self_serve, duplicate, preserve_owner, ownership_exception, or no_eligible_reps.</desc>
+<style>
+  .bg { fill: #ffffff; }
+  .title { fill: #1f2328; font: 600 15px system-ui, -apple-system, "Segoe UI", sans-serif; }
+  .lane { fill: #59636e; font: 500 11px system-ui, -apple-system, "Segoe UI", sans-serif; letter-spacing: .04em; }
+  .node { fill: #dafbe1; stroke: #1a7f37; stroke-width: 1.5; }
+  .node.planned { fill: #f6f8fa; stroke: #8c959f; stroke-dasharray: 5 4; }
+  .ntitle { fill: #1f2328; font: 600 13px system-ui, -apple-system, "Segoe UI", sans-serif; }
+  .nsub { fill: #59636e; font: 400 11px system-ui, -apple-system, "Segoe UI", sans-serif; }
+  .status { fill: #fff8c5; stroke: #9a6700; stroke-width: 1.2; }
+  .stext { fill: #6c4a00; font: 500 11.5px ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .edge { fill: none; stroke: #8c959f; stroke-width: 1.5; }
+  .arrow { fill: #8c959f; }
+  .lit-edge { fill: none; stroke: #0969da; stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; }
+  .lit-node { fill: none; stroke: #0969da; stroke-width: 2.5; stroke-opacity: .5; }
+  .act-node { fill: #0969da; fill-opacity: .14; stroke: #0969da; stroke-width: 3.5; }
+  .token { fill: #0969da; stroke: #ffffff; stroke-width: 2; }
+  .tlabel { fill: #0969da; font: 600 12px system-ui, -apple-system, "Segoe UI", sans-serif;
+            paint-order: stroke; stroke: #ffffff; stroke-width: 4px; stroke-linejoin: round; }
+  .cbox { fill: #f6f8fa; stroke: #d1d9e0; }
+  .cwho { fill: #0969da; font: 600 14px system-ui, -apple-system, "Segoe UI", sans-serif; }
+  .ctext { fill: #1f2328; font: 400 14px system-ui, -apple-system, "Segoe UI", sans-serif; }
+  .ltext { fill: #59636e; font: 400 12px system-ui, -apple-system, "Segoe UI", sans-serif; }
+  @media (prefers-color-scheme: dark) {
+    .bg { fill: #0d1117; }
+    .title, .ntitle, .ctext { fill: #e6edf3; }
+    .lane, .nsub, .ltext { fill: #9198a1; }
+    .node { fill: #0f2e1b; stroke: #3fb950; }
+    .node.planned { fill: #151b23; stroke: #656c76; }
+    .status { fill: #2e2404; stroke: #bb8009; }
+    .stext { fill: #e3b341; }
+    .edge { stroke: #3d444d; }
+    .arrow { fill: #3d444d; }
+    .lit-edge, .lit-node { stroke: #4493f8; }
+    .act-node { fill: #4493f8; stroke: #4493f8; fill-opacity: .2; }
+    .token { fill: #4493f8; stroke: #0d1117; }
+    .tlabel { fill: #4493f8; stroke: #0d1117; }
+    .cbox { fill: #151b23; stroke: #3d444d; }
+    .cwho { fill: #4493f8; }
+  }
+</style>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="arrow" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<rect class="bg" width="1130" height="560" rx="12"/>
+<text class="title" x="24" y="34">How a lead is routed</text>
+<text class="lane" x="24" y="56">DETERMINISTIC TRIAGE</text>
+<text class="lane" x="308" y="322">AGENTS AND ROUTING</text>
+<path class="edge" marker-end="url(#arrow)" d="M85,130 L185,130"/>
+<path class="edge" marker-end="url(#arrow)" d="M250,130 L350,130"/>
+<path class="edge" marker-end="url(#arrow)" d="M415,130 L515,130"/>
+<path class="edge" marker-end="url(#arrow)" d="M580,130 L680,130"/>
+<path class="edge" marker-end="url(#arrow)" d="M745,130 L840,130"/>
+<path class="edge" marker-end="url(#arrow)" d="M905,130 L989,130"/>
+<path class="edge" marker-end="url(#arrow)" d="M250,130 L250,63"/>
+<path class="edge" marker-end="url(#arrow)" d="M415,130 L415,185 L362,185 L362,207"/>
+<path class="edge" marker-end="url(#arrow)" d="M415,130 L415,185 L472,185 L472,207"/>
+<path class="edge" marker-end="url(#arrow)" d="M580,130 L580,63"/>
+<path class="edge" marker-end="url(#arrow)" d="M745,130 L745,185 L688,185 L688,207"/>
+<path class="edge" marker-end="url(#arrow)" d="M745,130 L745,185 L835,185 L835,207"/>
+<path class="edge" marker-end="url(#arrow)" d="M905,130 L905,63"/>
+<path class="edge" marker-end="url(#arrow)" d="M1050,130 L1050,350 L985,350"/>
+<path class="edge" marker-end="url(#arrow)" d="M1050,130 L1050,450 L985,450"/>
+<path class="edge" marker-end="url(#arrow)" d="M905,350 L800,350 L800,400 L785,400"/>
+<path class="edge" marker-end="url(#arrow)" d="M905,450 L800,450 L800,400 L785,400"/>
+<path class="edge" marker-end="url(#arrow)" d="M720,400 L610,400"/>
+<path class="edge" marker-end="url(#arrow)" d="M545,400 L435,400"/>
+<path class="lit-edge" opacity="0" d="M85,130 L250,130"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.023874;0.346769;0.378601;0.477200;0.509032;0.607791;0.639623;0.799260;0.831092;0.992042" values="0;1;0;1;0;1;0;1;0;1;0"/></path>
+<path class="lit-edge" opacity="0" d="M250,130 L415,130"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.054313;0.346769;0.409040;0.477200;0.539472;0.607791;0.670062;0.799260;0.861531;0.992042" values="0;1;0;1;0;1;0;1;0;1;0"/></path>
+<path class="lit-edge" opacity="0" d="M415,130 L580,130"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.084753;0.346769;0.700501;0.799260;0.891970;0.992042" values="0;1;0;1;0;1;0"/></path>
+<path class="lit-edge" opacity="0" d="M580,130 L745,130"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.115192;0.346769;0.730941;0.799260;0.922410;0.992042" values="0;1;0;1;0;1;0"/></path>
+<path class="lit-edge" opacity="0" d="M745,130 L905,130"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.145631;0.346769" values="0;1;0"/></path>
+<path class="lit-edge" opacity="0" d="M905,130 L1050,130"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.175871;0.346769" values="0;1;0"/></path>
+<path class="lit-edge" opacity="0" d="M415,130 L415,185 L362,185 L362,225"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.439480;0.477200" values="0;1;0"/></path>
+<path class="lit-edge" opacity="0" d="M415,130 L415,185 L472,185 L472,225"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.569911;0.607791" values="0;1;0"/></path>
+<path class="lit-edge" opacity="0" d="M745,130 L745,185 L688,185 L688,225"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.761380;0.799260" values="0;1;0"/></path>
+<path class="lit-edge" opacity="0" d="M745,130 L745,185 L835,185 L835,225"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.952849;0.992042" values="0;1;0"/></path>
+<path class="lit-edge" opacity="0" d="M1050,130 L1050,350 L905,350"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.205515;0.346769" values="0;1;0"/></path>
+<path class="lit-edge" opacity="0" d="M1050,130 L1050,450 L905,450"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.205515;0.346769" values="0;1;0"/></path>
+<path class="lit-edge" opacity="0" d="M905,350 L800,350 L800,400 L720,400"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.243912;0.346769" values="0;1;0"/></path>
+<path class="lit-edge" opacity="0" d="M905,450 L800,450 L800,400 L720,400"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.243912;0.346769" values="0;1;0"/></path>
+<path class="lit-edge" opacity="0" d="M720,400 L545,400"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.277137;0.346769" values="0;1;0"/></path>
+<path class="lit-edge" opacity="0" d="M545,400 L370,400"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.307974;0.346769" values="0;1;0"/></path>
+<g opacity="0"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.346769" values="1;0"/><animateMotion dur="125.66s" repeatCount="indefinite" calcMode="linear" keyTimes="0.000000;0.023874;0.030439;0.054313;0.060879;0.084753;0.091318;0.115192;0.121757;0.145631;0.151997;0.175871;0.181641;0.205515;0.220038;0.243912;0.253263;0.277137;0.284100;0.307974;0.314937;0.346769;1.000000" keyPoints="0.000000;0.000000;0.086162;0.086162;0.172324;0.172324;0.258486;0.258486;0.344648;0.344648;0.428198;0.428198;0.503916;0.503916;0.694517;0.694517;0.817232;0.817232;0.908616;0.908616;1.000000;1.000000;1.000000" path="M85,130 L250,130 L415,130 L580,130 L745,130 L905,130 L1050,130 L1050,350 L905,350 L800,350 L800,400 L720,400 L545,400 L370,400"/><circle class="token" r="8"/><text class="tlabel" x="12" y="-12">Elena</text></g>
+<g opacity="0"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.205515;0.253263" values="0;1;0"/><animateMotion dur="125.66s" repeatCount="indefinite" calcMode="linear" keyTimes="0.000000;0.205515;0.220038;0.243912;0.253263;1.000000" keyPoints="0.000000;0.000000;0.664286;0.664286;1.000000;1.000000" path="M1050,130 L1050,450 L905,450 L800,450 L800,400 L720,400"/><circle class="token" r="8"/></g>
+<g opacity="0"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.354727;0.477200" values="0;1;0"/><animateMotion dur="125.66s" repeatCount="indefinite" calcMode="linear" keyTimes="0.000000;0.354727;0.378601;0.385166;0.409040;0.415606;0.439480;0.445368;0.477200;1.000000" keyPoints="0.000000;0.000000;0.000000;0.345188;0.345188;0.690377;0.690377;1.000000;1.000000;1.000000" path="M85,130 L250,130 L415,130 L415,185 L362,185 L362,225"/><circle class="token" r="8"/><text class="tlabel" x="12" y="-12">Test Bot</text></g>
+<g opacity="0"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.485158;0.607791" values="0;1;0"/><animateMotion dur="125.66s" repeatCount="indefinite" calcMode="linear" keyTimes="0.000000;0.485158;0.509032;0.515598;0.539472;0.546037;0.569911;0.575959;0.607791;1.000000" keyPoints="0.000000;0.000000;0.000000;0.342324;0.342324;0.684647;0.684647;1.000000;1.000000;1.000000" path="M85,130 L250,130 L415,130 L415,185 L472,185 L472,225"/><circle class="token" r="8"/><text class="tlabel" x="12" y="-12">Alex</text></g>
+<g opacity="0"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.615749;0.799260" values="0;1;0"/><animateMotion dur="125.66s" repeatCount="indefinite" calcMode="linear" keyTimes="0.000000;0.615749;0.639623;0.646188;0.670062;0.676627;0.700501;0.707067;0.730941;0.737506;0.761380;0.767428;0.799260;1.000000" keyPoints="0.000000;0.000000;0.000000;0.203202;0.203202;0.406404;0.406404;0.609606;0.609606;0.812808;0.812808;1.000000;1.000000;1.000000" path="M85,130 L250,130 L415,130 L580,130 L745,130 L745,185 L688,185 L688,225"/><circle class="token" r="8"/><text class="tlabel" x="12" y="-12">Priya</text></g>
+<g opacity="0"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.807218;0.992042" values="0;1;0"/><animateMotion dur="125.66s" repeatCount="indefinite" calcMode="linear" keyTimes="0.000000;0.807218;0.831092;0.837657;0.861531;0.868096;0.891970;0.898536;0.922410;0.928975;0.952849;0.960210;0.992042;1.000000" keyPoints="0.000000;0.000000;0.000000;0.195266;0.195266;0.390533;0.390533;0.585799;0.585799;0.781065;0.781065;1.000000;1.000000;1.000000" path="M85,130 L250,130 L415,130 L580,130 L745,130 L745,185 L835,185 L835,225"/><circle class="token" r="8"/><text class="tlabel" x="12" y="-12">Sam</text></g>
+<rect class="node" x="23" y="102" width="124" height="56" rx="10"/>
+<text class="ntitle" x="85" y="127" text-anchor="middle">Web form</text>
+<text class="nsub" x="85" y="144" text-anchor="middle">fields and note</text>
+<rect class="node" x="188" y="102" width="124" height="56" rx="10"/>
+<text class="ntitle" x="250" y="127" text-anchor="middle">Schema check</text>
+<text class="nsub" x="250" y="144" text-anchor="middle">POST /leads</text>
+<rect class="node" x="353" y="102" width="124" height="56" rx="10"/>
+<text class="ntitle" x="415" y="127" text-anchor="middle">Screening</text>
+<text class="nsub" x="415" y="144" text-anchor="middle">spam, noise, ICP</text>
+<rect class="node" x="518" y="102" width="124" height="56" rx="10"/>
+<text class="ntitle" x="580" y="127" text-anchor="middle">Same email?</text>
+<text class="nsub" x="580" y="144" text-anchor="middle">last 30 days</text>
+<rect class="node" x="683" y="102" width="124" height="56" rx="10"/>
+<text class="ntitle" x="745" y="127" text-anchor="middle">Existing account?</text>
+<text class="nsub" x="745" y="144" text-anchor="middle">email domain</text>
+<rect class="node" x="843" y="102" width="124" height="56" rx="10"/>
+<text class="ntitle" x="905" y="127" text-anchor="middle">Rep filter</text>
+<text class="nsub" x="905" y="144" text-anchor="middle">territory, hours, cap</text>
+<rect class="node planned" x="828" y="322" width="154" height="56" rx="10"/>
+<text class="ntitle" x="905" y="347" text-anchor="middle">Buyer agent</text>
+<text class="nsub" x="905" y="364" text-anchor="middle">note, TheirStack, PostHog</text>
+<rect class="node planned" x="828" y="422" width="154" height="56" rx="10"/>
+<text class="ntitle" x="905" y="447" text-anchor="middle">Capacity service</text>
+<text class="nsub" x="905" y="464" text-anchor="middle">pipeline, backlog, fit</text>
+<rect class="node planned" x="658" y="372" width="124" height="56" rx="10"/>
+<text class="ntitle" x="720" y="397" text-anchor="middle">Routing agent</text>
+<text class="nsub" x="720" y="414" text-anchor="middle">primary and backup</text>
+<rect class="node planned" x="483" y="372" width="124" height="56" rx="10"/>
+<text class="ntitle" x="545" y="397" text-anchor="middle">Validate, commit</text>
+<text class="nsub" x="545" y="414" text-anchor="middle">reps on shortlist</text>
+<rect class="node planned" x="308" y="372" width="124" height="56" rx="10"/>
+<text class="ntitle" x="370" y="397" text-anchor="middle">Rep handoff</text>
+<text class="nsub" x="370" y="414" text-anchor="middle">brief and history</text>
+<rect class="status" x="198" y="30" width="104" height="30" rx="15"/>
+<text class="stext" x="250" y="49" text-anchor="middle">422 errors</text>
+<rect class="status" x="320" y="210" width="84" height="30" rx="15"/>
+<text class="stext" x="362" y="229" text-anchor="middle">dropped</text>
+<rect class="status" x="426" y="210" width="92" height="30" rx="15"/>
+<text class="stext" x="472" y="229" text-anchor="middle">self_serve</text>
+<rect class="status" x="532" y="30" width="96" height="30" rx="15"/>
+<text class="stext" x="580" y="49" text-anchor="middle">duplicate</text>
+<rect class="status" x="629" y="210" width="118" height="30" rx="15"/>
+<text class="stext" x="688" y="229" text-anchor="middle">preserve_owner</text>
+<rect class="status" x="760" y="210" width="150" height="30" rx="15"/>
+<text class="stext" x="835" y="229" text-anchor="middle">ownership_exception</text>
+<rect class="status" x="839" y="30" width="132" height="30" rx="15"/>
+<text class="stext" x="905" y="49" text-anchor="middle">no_eligible_reps</text>
+<rect class="status" x="992" y="115" width="116" height="30" rx="15"/>
+<text class="stext" x="1050" y="134" text-anchor="middle">new_prospect</text>
+<rect class="lit-node" opacity="0" x="20" y="99" width="130" height="62" rx="13"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.346769;0.354727;0.477200;0.485158;0.607791;0.615749;0.799260;0.807218;0.992042" values="1;0;1;0;1;0;1;0;1;0"/></rect>
+<rect class="lit-node" opacity="0" x="185" y="99" width="130" height="62" rx="13"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.030439;0.346769;0.385166;0.477200;0.515598;0.607791;0.646188;0.799260;0.837657;0.992042" values="0;1;0;1;0;1;0;1;0;1;0"/></rect>
+<rect class="lit-node" opacity="0" x="350" y="99" width="130" height="62" rx="13"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.060879;0.346769;0.415606;0.477200;0.546037;0.607791;0.676627;0.799260;0.868096;0.992042" values="0;1;0;1;0;1;0;1;0;1;0"/></rect>
+<rect class="lit-node" opacity="0" x="515" y="99" width="130" height="62" rx="13"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.091318;0.346769;0.707067;0.799260;0.898536;0.992042" values="0;1;0;1;0;1;0"/></rect>
+<rect class="lit-node" opacity="0" x="680" y="99" width="130" height="62" rx="13"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.121757;0.346769;0.737506;0.799260;0.928975;0.992042" values="0;1;0;1;0;1;0"/></rect>
+<rect class="lit-node" opacity="0" x="840" y="99" width="130" height="62" rx="13"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.151997;0.346769" values="0;1;0"/></rect>
+<rect class="lit-node" opacity="0" x="825" y="319" width="160" height="62" rx="13"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.220038;0.346769" values="0;1;0"/></rect>
+<rect class="lit-node" opacity="0" x="825" y="419" width="160" height="62" rx="13"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.220038;0.346769" values="0;1;0"/></rect>
+<rect class="lit-node" opacity="0" x="655" y="369" width="130" height="62" rx="13"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.253263;0.346769" values="0;1;0"/></rect>
+<rect class="lit-node" opacity="0" x="480" y="369" width="130" height="62" rx="13"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.284100;0.346769" values="0;1;0"/></rect>
+<rect class="lit-node" opacity="0" x="305" y="369" width="130" height="62" rx="13"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.314937;0.346769" values="0;1;0"/></rect>
+<rect class="lit-node" opacity="0" x="317" y="207" width="90" height="36" rx="18"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.445368;0.477200" values="0;1;0"/></rect>
+<rect class="lit-node" opacity="0" x="423" y="207" width="98" height="36" rx="18"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.575959;0.607791" values="0;1;0"/></rect>
+<rect class="lit-node" opacity="0" x="626" y="207" width="124" height="36" rx="18"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.767428;0.799260" values="0;1;0"/></rect>
+<rect class="lit-node" opacity="0" x="757" y="207" width="156" height="36" rx="18"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.960210;0.992042" values="0;1;0"/></rect>
+<rect class="lit-node" opacity="0" x="989" y="112" width="122" height="36" rx="18"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.181641;0.346769" values="0;1;0"/></rect>
+<rect class="act-node" opacity="0" x="20" y="99" width="130" height="62" rx="13"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.023874;0.354727;0.378601;0.485158;0.509032;0.615749;0.639623;0.807218;0.831092" values="1;0;1;0;1;0;1;0;1;0"/></rect>
+<rect class="act-node" opacity="0" x="185" y="99" width="130" height="62" rx="13"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.030439;0.054313;0.385166;0.409040;0.515598;0.539472;0.646188;0.670062;0.837657;0.861531" values="0;1;0;1;0;1;0;1;0;1;0"/></rect>
+<rect class="act-node" opacity="0" x="350" y="99" width="130" height="62" rx="13"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.060879;0.084753;0.415606;0.439480;0.546037;0.569911;0.676627;0.700501;0.868096;0.891970" values="0;1;0;1;0;1;0;1;0;1;0"/></rect>
+<rect class="act-node" opacity="0" x="515" y="99" width="130" height="62" rx="13"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.091318;0.115192;0.707067;0.730941;0.898536;0.922410" values="0;1;0;1;0;1;0"/></rect>
+<rect class="act-node" opacity="0" x="680" y="99" width="130" height="62" rx="13"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.121757;0.145631;0.737506;0.761380;0.928975;0.952849" values="0;1;0;1;0;1;0"/></rect>
+<rect class="act-node" opacity="0" x="840" y="99" width="130" height="62" rx="13"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.151997;0.175871" values="0;1;0"/></rect>
+<rect class="act-node" opacity="0" x="825" y="319" width="160" height="62" rx="13"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.220038;0.243912" values="0;1;0"/></rect>
+<rect class="act-node" opacity="0" x="825" y="419" width="160" height="62" rx="13"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.220038;0.243912" values="0;1;0"/></rect>
+<rect class="act-node" opacity="0" x="655" y="369" width="130" height="62" rx="13"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.253263;0.277137" values="0;1;0"/></rect>
+<rect class="act-node" opacity="0" x="480" y="369" width="130" height="62" rx="13"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.284100;0.307974" values="0;1;0"/></rect>
+<rect class="act-node" opacity="0" x="305" y="369" width="130" height="62" rx="13"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.314937;0.346769" values="0;1;0"/></rect>
+<rect class="act-node" opacity="0" x="317" y="207" width="90" height="36" rx="18"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.445368;0.477200" values="0;1;0"/></rect>
+<rect class="act-node" opacity="0" x="423" y="207" width="98" height="36" rx="18"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.575959;0.607791" values="0;1;0"/></rect>
+<rect class="act-node" opacity="0" x="626" y="207" width="124" height="36" rx="18"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.767428;0.799260" values="0;1;0"/></rect>
+<rect class="act-node" opacity="0" x="757" y="207" width="156" height="36" rx="18"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.960210;0.992042" values="0;1;0"/></rect>
+<rect class="act-node" opacity="0" x="989" y="112" width="122" height="36" rx="18"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.181641;0.205515" values="0;1;0"/></rect>
+<rect class="node" x="30" y="360" width="26" height="16" rx="4"/>
+<text class="ltext" x="66" y="372">Built, runs from POST /leads</text>
+<rect class="node planned" x="30" y="388" width="26" height="16" rx="4"/>
+<text class="ltext" x="66" y="400">Planned</text>
+<rect class="status" x="30" y="416" width="26" height="16" rx="8"/>
+<text class="ltext" x="66" y="428">Status the API returns</text>
+<circle class="token" cx="43" cy="452" r="7"/>
+<text class="ltext" x="66" y="456">Example lead</text>
+<rect class="cbox" x="20" y="484" width="1090" height="62" rx="10"/>
+<text class="cwho" x="40" y="508" opacity="0">Elena Rostova, FinPay (Spain)<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.346769" values="1;0"/></text>
+<text class="ctext" x="40" y="531" opacity="0">Submits the form: Intercom contract ends in 2 weeks, needs 40 seats before Q1<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.030439" values="1;0"/></text>
+<text class="ctext" x="40" y="531" opacity="0">Schema valid: required fields, work email, phone, company size<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.030439;0.060879" values="0;1;0"/></text>
+<text class="ctext" x="40" y="531" opacity="0">Passes screening: not a test, competitor, or non-ICP submission<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.060879;0.091318" values="0;1;0"/></text>
+<text class="ctext" x="40" y="531" opacity="0">No earlier submission from elena@finpay.es<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.091318;0.121757" values="0;1;0"/></text>
+<text class="ctext" x="40" y="531" opacity="0">No existing account for finpay.es, so this is a new prospect<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.121757;0.151997" values="0;1;0"/></text>
+<text class="ctext" x="40" y="531" opacity="0">5 eligible reps in EMEA-Southern: Mid-Market, Spanish, active, under cap, in hours<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.151997;0.181641" values="0;1;0"/></text>
+<text class="ctext" x="40" y="531" opacity="0">The shortlist goes to both agents at once<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.181641;0.220038" values="0;1;0"/></text>
+<text class="ctext" x="40" y="531" opacity="0">In parallel: the buyer agent reads intent (workbook expects 95, High) and the capacity service scores the 5 reps<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.220038;0.253263" values="0;1;0"/></text>
+<text class="ctext" x="40" y="531" opacity="0">The routing agent proposes a primary and a backup rep from the 5<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.253263;0.284100" values="0;1;0"/></text>
+<text class="ctext" x="40" y="531" opacity="0">Both reps are checked against the shortlist, then the assignment is committed<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.284100;0.314937" values="0;1;0"/></text>
+<text class="ctext" x="40" y="531" opacity="0">The rep gets the buyer brief, and the decision is saved<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.314937;0.346769" values="0;1;0"/></text>
+<text class="cwho" x="40" y="508" opacity="0">Test Bot, qa-automation-bot@test-domain-internal.org<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.354727;0.477200" values="0;1;0"/></text>
+<text class="ctext" x="40" y="531" opacity="0">An automated staging test submits the form<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.354727;0.385166" values="0;1;0"/></text>
+<text class="ctext" x="40" y="531" opacity="0">Schema valid<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.385166;0.415606" values="0;1;0"/></text>
+<text class="ctext" x="40" y="531" opacity="0">Screening finds a test or bot address<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.415606;0.445368" values="0;1;0"/></text>
+<text class="ctext" x="40" y="531" opacity="0">Dropped before any agent or rep sees it<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.445368;0.477200" values="0;1;0"/></text>
+<text class="cwho" x="40" y="508" opacity="0">Alex Student, gmail.com, 1-15 people<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.485158;0.607791" values="0;1;0"/></text>
+<text class="ctext" x="40" y="531" opacity="0">Asks about a chat widget for a college side project<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.485158;0.515598" values="0;1;0"/></text>
+<text class="ctext" x="40" y="531" opacity="0">Schema valid<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.515598;0.546037" values="0;1;0"/></text>
+<text class="ctext" x="40" y="531" opacity="0">Screening: company size 1-15 is below the sales-assisted segment<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.546037;0.575959" values="0;1;0"/></text>
+<text class="ctext" x="40" y="531" opacity="0">Sent to self-serve<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.575959;0.607791" values="0;1;0"/></text>
+<text class="cwho" x="40" y="508" opacity="0">Priya Shah, HarborPay (mock account)<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.615749;0.799260" values="0;1;0"/></text>
+<text class="ctext" x="40" y="531" opacity="0">Asks to buy more licenses<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.615749;0.646188" values="0;1;0"/></text>
+<text class="ctext" x="40" y="531" opacity="0">Schema valid<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.646188;0.676627" values="0;1;0"/></text>
+<text class="ctext" x="40" y="531" opacity="0">Passes screening<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.676627;0.707067" values="0;1;0"/></text>
+<text class="ctext" x="40" y="531" opacity="0">No earlier submission from this email<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.707067;0.737506" values="0;1;0"/></text>
+<text class="ctext" x="40" y="531" opacity="0">harborpay.com is an existing customer owned by Mark Rivera (rep_002)<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.737506;0.767428" values="0;1;0"/></text>
+<text class="ctext" x="40" y="531" opacity="0">Owner kept and a handoff brief generated, with no agent calls<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.767428;0.799260" values="0;1;0"/></text>
+<text class="cwho" x="40" y="508" opacity="0">Sam Lee, Atlas Group (mock account)<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.807218;0.992042" values="0;1;0"/></text>
+<text class="ctext" x="40" y="531" opacity="0">Asks about an enterprise compliance plan<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.807218;0.837657" values="0;1;0"/></text>
+<text class="ctext" x="40" y="531" opacity="0">Schema valid<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.837657;0.868096" values="0;1;0"/></text>
+<text class="ctext" x="40" y="531" opacity="0">Passes screening<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.868096;0.898536" values="0;1;0"/></text>
+<text class="ctext" x="40" y="531" opacity="0">No earlier submission from this email<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.898536;0.928975" values="0;1;0"/></text>
+<text class="ctext" x="40" y="531" opacity="0">atlasgroup.com has two accounts with different owners: rep_009 and rep_038<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.928975;0.960210" values="0;1;0"/></text>
+<text class="ctext" x="40" y="531" opacity="0">Sent to RevOps as an ownership exception, listing both owners<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.960210;0.992042" values="0;1;0"/></text>
+</svg>
