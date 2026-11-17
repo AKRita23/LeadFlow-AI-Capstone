@@ -3,7 +3,7 @@ import re
 import uuid
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import Any, List, Literal, Optional
+from typing import Any, List, Literal, Optional, Tuple
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -135,6 +135,157 @@ class Lead(BaseModel):
     @property
     def email_domain(self) -> str:
         return self.work_email.rsplit("@", 1)[-1]
+
+
+AccountRecordType = Literal["Customer", "Open Opportunity", "Closed Lost"]
+
+# Active CRM rows. A closed-lost row does not make the domain an existing account.
+ACTIVE_ACCOUNT_TYPES = frozenset({"Customer", "Open Opportunity"})
+
+AccountOutcome = Literal["new_prospect", "preserve_owner", "ambiguous_ownership"]
+
+
+@dataclass(frozen=True)
+class Account:
+    """One CRM account or opportunity row, matched to a lead by email domain.
+
+    Several rows may share a domain. The existing-account gate decides from the
+    distinct owners on the active rows, not from the row count.
+    """
+
+    account_id: str
+    scenario: str
+    account_name: str
+    domain: str
+    country: str
+    segment: str
+    record_type: AccountRecordType
+    owner_rep_id: Optional[str] = None
+    opportunity_name: Optional[str] = None
+    opportunity_stage: Optional[str] = None
+
+
+@dataclass(frozen=True)
+class AccountMatch:
+    """Result of matching one email domain against the mock account table."""
+
+    domain: str
+    outcome: AccountOutcome
+    owner_rep_id: Optional[str]
+    owner_rep_ids: Tuple[str, ...]
+    account_ids: Tuple[str, ...]
+
+
+OwnershipOutcome = Literal["preserve_owner", "ownership_exception"]
+
+
+@dataclass(frozen=True)
+class OwnershipDecision:
+    """Final decision for a lead that matched an existing account.
+
+    The buyer agent and the routing agent are never called on this path.
+    """
+
+    submission_id: str
+    outcome: OwnershipOutcome
+    assigned_rep_id: Optional[str]
+    candidate_rep_ids: Tuple[str, ...]
+    account_ids: Tuple[str, ...]
+    reason: str
+    brief: str
+
+
+Segment = Literal["SMB", "Mid-Market", "Enterprise"]
+
+EligibilityRule = Literal["segment", "language", "availability", "daily_cap", "working_hours"]
+
+
+@dataclass(frozen=True)
+class TerritoryRule:
+    """One row of data/territories.csv. state is set only for US rows."""
+
+    country: str
+    state: Optional[str]
+    territory: str
+    language: str
+
+
+@dataclass(frozen=True)
+class EligibleReps:
+    """Shortlist for a new prospect, before capacity scoring.
+
+    excluded lists reps in the lead's territory with the first rule each
+    failed. Reps outside the territory are not listed.
+
+    after_hours is True when every rep that passed the other rules was outside
+    working hours. Those reps are shortlisted anyway so the lead is not dropped.
+    """
+
+    submission_id: str
+    territory: Optional[str]
+    segment: Segment
+    language: str
+    rep_ids: Tuple[str, ...]
+    excluded: Tuple[Tuple[str, EligibilityRule], ...]
+    after_hours: bool = False
+
+
+ScreenOutcome = Literal["pass", "drop", "self_serve"]
+
+ScreenReason = Literal["test_submission", "internal", "competitor", "recruiting_agency", "media", "micro_company"]
+
+
+@dataclass(frozen=True)
+class ScreenResult:
+    outcome: ScreenOutcome
+    reason: Optional[ScreenReason]
+    detail: str
+
+
+@dataclass(frozen=True)
+class PriorSubmission:
+    """A lead already triaged, read back from the submissions table."""
+
+    submission_id: str
+    submitted_at: str
+    work_email: str
+    domain: str
+    outcome: str
+    assigned_rep_id: Optional[str]
+
+
+DuplicateKind = Literal["none", "same_email", "same_domain"]
+
+
+@dataclass(frozen=True)
+class DuplicateMatch:
+    kind: DuplicateKind
+    prior_submission_id: Optional[str] = None
+    prior_rep_id: Optional[str] = None
+
+
+TriageOutcome = Literal[
+    "dropped", "self_serve", "duplicate", "preserve_owner", "ownership_exception", "new_prospect", "no_eligible_reps"
+]
+
+
+@dataclass(frozen=True)
+class TriageResult:
+    """Outcome of the deterministic stages for one lead.
+
+    shortlist is set only for new_prospect and no_eligible_reps. related_* is
+    set when a recent lead from the same company domain was already triaged.
+    """
+
+    submission_id: str
+    outcome: TriageOutcome
+    reason: str
+    assigned_rep_id: Optional[str] = None
+    ownership: Optional[OwnershipDecision] = None
+    shortlist: Optional[EligibleReps] = None
+    duplicate_of: Optional[str] = None
+    related_submission_id: Optional[str] = None
+    related_rep_id: Optional[str] = None
 
 
 @dataclass(frozen=True)
