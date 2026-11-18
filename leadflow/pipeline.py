@@ -10,7 +10,7 @@ rep, if any, are passed on as related_* for the routing step to weigh.
 """
 from typing import Sequence
 
-from leadflow.accounts import match_domain, resolve_existing_account
+from leadflow.accounts import resolve_existing_account
 from leadflow.data_loader import TerritoryMap
 from leadflow.eligibility import filter_eligible_reps
 from leadflow.models import Account, Lead, Rep, TriageResult
@@ -52,9 +52,8 @@ def _decide(
             duplicate_of=duplicate.prior_submission_id,
         )
 
-    match = match_domain(lead.email_domain, accounts)
-    if match.outcome != "new_prospect":
-        decision = resolve_existing_account(lead, match, accounts, reps)
+    decision = resolve_existing_account(lead, accounts, reps)
+    if decision is not None:
         store.save(decision)
         return TriageResult(
             lead.submission_id, decision.outcome, decision.reason, decision.assigned_rep_id, ownership=decision

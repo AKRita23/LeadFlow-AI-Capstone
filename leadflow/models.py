@@ -142,9 +142,6 @@ AccountRecordType = Literal["Customer", "Open Opportunity", "Closed Lost"]
 # Active CRM rows. A closed-lost row does not make the domain an existing account.
 ACTIVE_ACCOUNT_TYPES = frozenset({"Customer", "Open Opportunity"})
 
-AccountOutcome = Literal["new_prospect", "preserve_owner", "ambiguous_ownership"]
-
-
 @dataclass(frozen=True)
 class Account:
     """One CRM account or opportunity row, matched to a lead by email domain.
@@ -163,17 +160,6 @@ class Account:
     owner_rep_id: Optional[str] = None
     opportunity_name: Optional[str] = None
     opportunity_stage: Optional[str] = None
-
-
-@dataclass(frozen=True)
-class AccountMatch:
-    """Result of matching one email domain against the mock account table."""
-
-    domain: str
-    outcome: AccountOutcome
-    owner_rep_id: Optional[str]
-    owner_rep_ids: Tuple[str, ...]
-    account_ids: Tuple[str, ...]
 
 
 OwnershipOutcome = Literal["preserve_owner", "ownership_exception"]

@@ -72,7 +72,7 @@ class BuyerContextAgent:
         return Enrichment(firmographics, behavior, {"theirstack": "mocked", "posthog": "mocked"})
 
     def extract(self, lead: Lead) -> Extraction:
-        if not (lead.free_text_note or "").strip() or self.extractor is None:
+        if lead.free_text_note is None or self.extractor is None:
             return Extraction(extract_with_rules(lead), "rules", "skipped")
         try:
             return Extraction(self.extractor(lead), "llm", "ok")

@@ -2,7 +2,7 @@ import dataclasses
 
 import pytest
 
-from leadflow.accounts import match_domain, resolve_existing_account
+from leadflow.accounts import resolve_existing_account
 from leadflow.data_loader import load_accounts, load_reps
 from leadflow.models import Lead
 from leadflow.store import DecisionStore
@@ -38,8 +38,7 @@ def make_lead(email, **overrides):
 
 
 def resolve(email, accounts, reps):
-    lead = make_lead(email)
-    return resolve_existing_account(lead, match_domain(lead.email_domain, accounts), accounts, reps)
+    return resolve_existing_account(make_lead(email), accounts, reps)
 
 
 def test_customer_keeps_its_owner(accounts, reps):
@@ -84,9 +83,8 @@ def test_owner_missing_from_roster_raises_an_exception(accounts, reps):
     assert "rep_999 (not on roster)" in decision.brief
 
 
-def test_new_prospect_is_not_handled_here(accounts, reps):
-    with pytest.raises(ValueError):
-        resolve("priya@example.com", accounts, reps)
+def test_new_prospect_has_no_decision(accounts, reps):
+    assert resolve("priya@example.com", accounts, reps) is None
 
 
 def test_decisions_are_persisted_per_run(tmp_path, accounts, reps):

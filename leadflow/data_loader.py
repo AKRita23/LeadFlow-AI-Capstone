@@ -9,8 +9,9 @@ validation as API submissions (including phone normalisation to "+<digits>").
 """
 import csv
 import datetime as dt
+from functools import lru_cache
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, get_args
 
 import pandas as pd
 
@@ -52,14 +53,18 @@ def _split_list(value: Optional[str], sep: str) -> List[str]:
     return [part.strip() for part in value.split(sep) if part.strip()]
 
 
+@lru_cache(maxsize=4)
+def _buyer_rows(path: Path) -> Tuple[Dict[str, Any], ...]:
+    """The buyer sheet's rows as cleaned dicts, read once per path."""
+    df = pd.read_excel(path, sheet_name=BUYER_SHEET, header=1)
+    rows = ({k: _clean(v) for k, v in row.items()} for _, row in df.iterrows())
+    return tuple(r for r in rows if r["Submission ID"] is not None)
+
+
 def load_leads(path: Path = DATASET_PATH) -> Tuple[List[Lead], List[LeadExpectation]]:
     """Return the form submissions and the dataset's expected outcome for each."""
-    df = pd.read_excel(path, sheet_name=BUYER_SHEET, header=1)
     leads, expectations = [], []
-    for _, row in df.iterrows():
-        r = {k: _clean(v) for k, v in row.items()}
-        if r["Submission ID"] is None:
-            continue
+    for r in _buyer_rows(path):
         leads.append(
             Lead(
                 submission_id=r["Submission ID"],
@@ -95,12 +100,8 @@ def load_enrichment(path: Path = DATASET_PATH) -> List[EnrichmentRow]:
     Leads the workbook never enriched (the excluded self-serve and test rows)
     get None for both.
     """
-    df = pd.read_excel(path, sheet_name=BUYER_SHEET, header=1)
     rows = []
-    for _, row in df.iterrows():
-        r = {k: _clean(v) for k, v in row.items()}
-        if r["Submission ID"] is None:
-            continue
+    for r in _buyer_rows(path):
         firmographics = None
         if r["Industry"] is not None:
             firmographics = Firmographics(
@@ -168,7 +169,7 @@ def load_territories(path: Path = TERRITORIES_PATH) -> TerritoryMap:
 
 
 def _record_type(value: str) -> AccountRecordType:
-    if value not in ("Customer", "Open Opportunity", "Closed Lost"):
+    if value not in get_args(AccountRecordType):
         raise ValueError(f"unknown account record type: {value}")
     return value
 

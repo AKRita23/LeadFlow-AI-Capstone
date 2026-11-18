@@ -7,7 +7,7 @@ key or the call fails; it also keeps tests offline.
 """
 import os
 import re
-from typing import Any, List, Optional, Protocol
+from typing import Any, Dict, List, Optional, Protocol
 
 from leadflow.contracts import COMPETITORS, BuyingStage, NoteSignals
 from leadflow.models import Lead
@@ -116,17 +116,16 @@ def _stage(note: str, inquiry_reason: str) -> BuyingStage:
 
 
 def _compliance(note: str) -> List[str]:
-    found: List[str] = []
+    """Compliance terms in order of first mention, ignoring repeats in a different case."""
+    by_key: Dict[str, str] = {}
     for match in _COMPLIANCE_RE.finditer(note):
-        term = match.group(1)
-        if term.lower() not in (f.lower() for f in found):
-            found.append(term)
-    return found[:6]
+        by_key.setdefault(match.group(1).lower(), match.group(1))
+    return list(by_key.values())[:6]
 
 
 def extract_with_rules(lead: Lead) -> NoteSignals:
-    note = (lead.free_text_note or "").strip()
-    if not note:
+    note = lead.free_text_note
+    if note is None:
         return NoteSignals()
     deadline = None
     if _NOW_RE.search(note):

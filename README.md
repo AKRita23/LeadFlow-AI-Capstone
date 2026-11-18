@@ -220,7 +220,7 @@ flows/components/leadflow/           Langflow components wrapping the buyer agen
 
 ## Existing-account path
 
-`resolve_existing_account` takes a lead whose domain matched an active account. One owner on the roster is preserved and becomes `assigned_rep_id`. Two owners, an active record with no owner, or an owner missing from the roster becomes an `ownership_exception` for RevOps, with the candidate owners listed. Both outcomes include a plain-text handoff brief. `DecisionStore.save` appends the decision to the `routing_decisions` table. The buyer agent and the routing agent are not called on this path.
+`resolve_existing_account` matches the lead's email domain against the active accounts and returns `None` for a new prospect. One owner on the roster is preserved and becomes `assigned_rep_id`. Two owners, an active record with no owner, or an owner missing from the roster becomes an `ownership_exception` for RevOps, with the candidate owners listed. Both outcomes include a plain-text handoff brief. `DecisionStore.save` appends the decision to the `routing_decisions` table. The buyer agent and the routing agent are not called on this path.
 
 ## Rep-pool filter
 

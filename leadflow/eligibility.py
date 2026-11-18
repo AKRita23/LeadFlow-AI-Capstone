@@ -59,16 +59,16 @@ def filter_eligible_reps(lead: Lead, reps: Sequence[Rep], territories: Territory
     kept, with rep_id breaking ties so the same lead always gets the same list.
     """
     rule = territory_for(lead, territories)
-    territory = rule.territory if rule else None
-    language = rule.language if rule else "en"
     segment = segment_for(lead.company_size)
+    if rule is None:
+        return EligibleReps(lead.submission_id, territory=None, segment=segment, language="en", rep_ids=(), excluded=())
     in_hours: List[Rep] = []
     off_hours: List[Rep] = []
     excluded: List[Tuple[str, EligibilityRule]] = []
     for rep in reps:
-        if territory is None or rep.territory != territory:
+        if rep.territory != rule.territory:
             continue
-        failed = _first_failed_rule(rep, segment, language)
+        failed = _first_failed_rule(rep, segment, rule.language)
         if failed is not None:
             excluded.append((rep.rep_id, failed))
         elif in_working_hours(rep, lead.submitted_at):
@@ -83,9 +83,9 @@ def filter_eligible_reps(lead: Lead, reps: Sequence[Rep], territories: Territory
     eligible.sort(key=lambda rep: (rep.leads_assigned_today - rep.daily_lead_cap, rep.rep_id))
     return EligibleReps(
         submission_id=lead.submission_id,
-        territory=territory,
+        territory=rule.territory,
         segment=segment,
-        language=language,
+        language=rule.language,
         rep_ids=tuple(rep.rep_id for rep in eligible[:MAX_SHORTLIST]),
         excluded=tuple(excluded),
         after_hours=after_hours,
