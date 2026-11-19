@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LeadFlow AI</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --card: #fff; --line: #e3e6ea; --text: #1f2328; --muted: #59636e;
+    --blue: #0969da; --green: #1a7f37; --green-bg: #dafbe1; --amber: #9a6700; --amber-bg: #fff8c5;
+    --red: #cf222e; --red-bg: #ffebe9; --grey-bg: #eef0f2;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+         color: var(--text); background: var(--bg); }
+  header { padding: 16px 24px; background: var(--card); border-bottom: 1px solid var(--line); }
+  header h1 { margin: 0; font-size: 18px; }
+  header p { margin: 2px 0 0; color: var(--muted); }
+  main { display: grid; grid-template-columns: 360px 1fr; gap: 20px; padding: 20px 24px; align-items: start; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+  .card h2 { margin: 0 0 12px; font-size: 15px; }
+  label { display: block; font-size: 12px; color: var(--muted); margin: 8px 0 3px; }
+  input, select, textarea { width: 100%; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px;
+                            font: inherit; background: #fff; }
+  textarea { min-height: 72px; resize: vertical; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  button { margin-top: 14px; width: 100%; padding: 9px; border: 0; border-radius: 6px; background: var(--blue);
+           color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
+  button:disabled { opacity: .6; cursor: wait; }
+  .empty { color: var(--muted); }
+  .banner { display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; }
+  .status { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-weight: 600; padding: 2px 8px;
+            border-radius: 12px; background: var(--amber-bg); color: var(--amber); }
+  .status.ok { background: var(--green-bg); color: var(--green); }
+  .status.bad { background: var(--red-bg); color: var(--red); }
+  .muted { color: var(--muted); }
+  .stages { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .stage { padding: 5px 10px; border-radius: 6px; border: 1px solid var(--line); background: var(--grey-bg);
+           color: var(--muted); font-size: 13px; }
+  .stage.passed { background: var(--green-bg); border-color: #aceebb; color: var(--green); }
+  .stage.decided { background: var(--amber-bg); border-color: #eac54f; color: var(--amber); font-weight: 600; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .score { font-size: 34px; font-weight: 700; line-height: 1; }
+  .pill { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 12px; font-weight: 600;
+          background: var(--grey-bg); }
+  .pill.High { background: var(--red-bg); color: var(--red); }
+  .pill.Medium { background: var(--amber-bg); color: var(--amber); }
+  .pill.Low { background: var(--green-bg); color: var(--green); }
+  .pill.bw-High { background: var(--green-bg); color: var(--green); }
+  .pill.bw-Medium { background: var(--amber-bg); color: var(--amber); }
+  .pill.bw-Low { background: var(--red-bg); color: var(--red); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: 12px; }
+  tr.primary { background: #ddf4ff; }
+  tr.backup { background: #f1f8ff; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .brief { white-space: pre-wrap; background: var(--bg); border: 1px solid var(--line); border-radius: 6px;
+           padding: 10px 12px; margin: 8px 0 0; }
+  details summary { cursor: pointer; color: var(--muted); }
+  pre.json { max-height: 420px; overflow: auto; font-size: 12px; background: var(--bg); padding: 10px; }
+  ul.errors { margin: 8px 0 0; padding-left: 18px; color: var(--red); }
+  @media (max-width: 1000px) { main { grid-template-columns: 1fr; } .grid2 { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>LeadFlow AI</h1>
+  <p>Submit an inbound lead and see how it is triaged, scored, and routed.</p>
+</header>
+<main>
+  <section>
+    <div class="card">
+      <h2>Inbound lead</h2>
+      <label for="sample">Sample</label>
+      <select id="sample"></select>
+      <form id="form"></form>
+      <button id="send" type="submit" form="form">Send lead</button>
+    </div>
+  </section>
+  <section id="result">
+    <div class="card empty">Pick a sample or fill in the form, then send it.</div>
+  </section>
+</main>
+
+<script>
+const ENUMS = {
+  role: ["CXO", "VP", "Director", "Manager", "Contributor"],
+  company_size: ["1-15", "16-100", "51-250", "101-500", "251-1000", "501-1000", "1001+"],
+  inquiry_reason: [
+    "I want to evaluate BeaconDesk for my organization",
+    "I want to understand which BeaconDesk plan is right for me",
+    "I want to buy licenses or upgrade",
+    "I need a compliance plan",
+  ],
+};
+const FIELDS = [
+  ["first_name", "First name"], ["last_name", "Last name"], ["work_email", "Work email", "wide"],
+  ["company", "Company", "wide"], ["role", "Role"], ["company_size", "Company size"],
+  ["country", "Country"], ["state", "State (US only)"], ["phone_number", "Phone", "wide"],
+  ["inquiry_reason", "Inquiry reason", "wide"], ["free_text_note", "Note", "wide"],
+  ["submission_id", "Submission ID"], ["submitted_at", "Submitted at (UTC)"],
+];
+const STAGES = [
+  ["schema", "Schema check"], ["screen", "Screening"], ["dup", "Same email?"], ["acct", "Existing account"],
+  ["filter", "Rep filter"], ["buyer", "Buyer agent"], ["capacity", "Capacity service"], ["routing", "Routing agent"],
+];
+const DECIDED_AT = {
+  dropped: "screen", self_serve: "screen", duplicate: "dup", preserve_owner: "acct",
+  ownership_exception: "acct", no_eligible_reps: "filter", new_prospect: "routing",
+};
+
+let samples = [];
+
+function el(tag, attrs = {}, ...children) {
+  const node = document.createElement(tag);
+  for (const [key, value] of Object.entries(attrs)) {
+    if (key === "class") node.className = value;
+    else node.setAttribute(key, value);
+  }
+  for (const child of children.flat()) {
+    if (child === null || child === undefined || child === false) continue;
+    node.append(child instanceof Node ? child : String(child));
+  }
+  return node;
+}
+
+function buildForm() {
+  const form = document.getElementById("form");
+  let pair = null;
+  for (const [name, text, wide] of FIELDS) {
+    let input;
+    if (ENUMS[name]) {
+      input = el("select", { id: name, name }, ENUMS[name].map((v) => el("option", { value: v }, v)));
+    } else if (name === "free_text_note") {
+      input = el("textarea", { id: name, name });
+    } else {
+      input = el("input", { id: name, name, type: "text" });
+    }
+    const field = el("div", {}, el("label", { for: name }, text), input);
+    if (wide) { form.append(field); pair = null; }
+    else if (pair) { pair.append(field); pair = null; }
+    else { pair = el("div", { class: "row" }, field); form.append(pair); }
+  }
+}
+
+function fillForm(lead) {
+  for (const [name] of FIELDS) document.getElementById(name).value = lead[name] ?? "";
+}
+
+function readForm() {
+  const lead = {};
+  for (const [name] of FIELDS) {
+    const value = document.getElementById(name).value.trim();
+    if (value !== "") lead[name] = value;
+    else if (name === "state" || name === "free_text_note") lead[name] = null;
+  }
+  return lead;
+}
+
+async function loadSamples() {
+  samples = await (await fetch("/demo/samples")).json();
+  const select = document.getElementById("sample");
+  const groups = {};
+  samples.forEach((sample, i) => {
+    groups[sample.group] ??= el("optgroup", { label: sample.group });
+    groups[sample.group].append(el("option", { value: i }, sample.label));
+  });
+  select.append(...Object.values(groups));
+  select.addEventListener("change", () => fillForm(samples[select.value].lead));
+  // A link like /#send=sub_8f92a1c4 picks that sample and sends it.
+  const wanted = new URLSearchParams(location.hash.slice(1)).get("send");
+  const index = Math.max(0, samples.findIndex((s) => s.lead.submission_id === wanted));
+  select.value = index;
+  fillForm(samples[index].lead);
+  if (wanted) document.getElementById("send").click();
+}
+
+async function send(event) {
+  event.preventDefault();
+  const button = document.getElementById("send");
+  button.disabled = true;
+  button.textContent = "Routing...";
+  const started = performance.now();
+  try {
+    const response = await fetch("/leads", {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(readForm()),
+    });
+    const body = await response.json();
+    render(response.status, body, Math.round(performance.now() - started));
+  } catch (error) {
+    render(0, { detail: [{ loc: ["request"], msg: String(error) }] }, 0);
+  } finally {
+    button.disabled = false;
+    button.textContent = "Send lead";
+  }
+}
+
+function stageStrip(decidedAt) {
+  const index = STAGES.findIndex(([key]) => key === decidedAt);
+  return el("div", { class: "stages" }, STAGES.map(([key, text], i) => {
+    let cls = "stage";
+    if (i < index || (decidedAt === "routing" && i === index)) cls += " passed";
+    else if (i === index) cls += " decided";
+    return el("span", { class: cls }, text);
+  }));
+}
+
+function render(httpStatus, body, ms) {
+  const out = document.getElementById("result");
+  out.replaceChildren();
+  if (httpStatus !== 202) {
+    const errors = (body.detail || []).map((e) => el("li", {}, `${(e.loc || []).slice(1).join(".") || "lead"}: ${e.msg}`));
+    out.append(el("div", { class: "card" },
+      el("div", { class: "banner" }, el("span", { class: "status bad" }, httpStatus || "error"),
+        el("span", {}, "Rejected by the schema check")),
+      stageStrip("schema"), el("ul", { class: "errors" }, errors)));
+    return;
+  }
+  const ok = body.status === "new_prospect" || body.status === "preserve_owner";
+  out.append(el("div", { class: "card" },
+    el("div", { class: "banner" },
+      el("span", { class: ok ? "status ok" : "status" }, body.status),
+      el("span", {}, body.reason),
+      el("span", { class: "muted" }, `${ms} ms`)),
+    stageStrip(DECIDED_AT[body.status])));
+
+  const ownership = body.triage.ownership;
+  if (ownership) {
+    out.append(el("div", { class: "card" }, el("h2", {}, "Existing account"),
+      el("div", {}, ownership.assigned_rep_id ? `Owner kept: ${ownership.assigned_rep_id}` : "Sent to RevOps"),
+      el("div", { class: "brief" }, ownership.brief)));
+  }
+  if (body.status === "duplicate") {
+    out.append(el("div", { class: "card" }, el("h2", {}, "Duplicate"),
+      el("div", {}, `Earlier submission: ${body.triage.duplicate_of}. `,
+        body.assigned_rep_id ? `Kept rep ${body.assigned_rep_id}.` : "No rep was assigned to it.")));
+  }
+  if (body.buyer) out.append(el("div", { class: "grid2" }, buyerCard(body.buyer), routingCard(body.routing)));
+  if (body.capacity) out.append(capacityCard(body.capacity, body.triage.shortlist, body.routing));
+  out.append(el("div", { class: "card" }, el("details", {}, el("summary", {}, "Full response"),
+    el("pre", { class: "json" }, JSON.stringify(body, null, 2)))));
+}
+
+function buyerCard(buyer) {
+  const rows = buyer.score_breakdown.map((line) =>
+    el("tr", {}, el("td", {}, line.factor), el("td", { class: "num" }, line.points > 0 ? `+${line.points}` : line.points),
+      el("td", {}, line.detail)));
+  return el("div", { class: "card" }, el("h2", {}, "Buyer agent"),
+    el("div", { class: "banner" }, el("span", { class: "score" }, buyer.intent_score),
+      el("span", { class: `pill ${buyer.urgency_tier}` }, `${buyer.urgency_tier} urgency`),
+      buyer.detected_competitor && el("span", { class: "pill" }, buyer.detected_competitor)),
+    el("p", {}, buyer.note_summary || el("span", { class: "muted" }, "No note")),
+    el("p", { class: "muted" }, `Note read by ${buyer.extraction === "llm" ? "Claude" : "rules"} (llm: ${buyer.tool_status.llm})`),
+    el("table", {}, el("tr", {}, el("th", {}, "Factor"), el("th", {}, "Points"), el("th", {}, "Why")), rows));
+}
+
+function routingCard(routing) {
+  const p = routing.proposal;
+  const how = routing.method === "llm" ? "Proposed by Claude" : `Proposed by the ranker (Claude: ${routing.llm_status})`;
+  return el("div", { class: "card" }, el("h2", {}, "Routing agent"),
+    el("div", { class: "banner" }, el("span", { class: "score" }, p.primary_rep_id),
+      p.backup_rep_id && el("span", { class: "muted" }, `backup ${p.backup_rep_id}`)),
+    el("p", { class: "muted" }, how),
+    routing.problems.length > 0 && el("ul", { class: "errors" }, routing.problems.map((x) => el("li", {}, x))),
+    el("p", {}, p.routing_rationale),
+    el("h2", {}, "Brief for the rep"),
+    el("div", { class: "brief" }, p.rep_brief));
+}
+
+function capacityCard(capacity, shortlist, routing) {
+  const primary = routing && routing.proposal.primary_rep_id;
+  const backup = routing && routing.proposal.backup_rep_id;
+  const head = el("tr", {}, ["Rep", "Bandwidth", "Stage pressure", "Leads left", "Meetings (h)", "Strong against",
+    "Expertise", "Notes"].map((h) => el("th", {}, h)));
+  const rows = capacity.reps.map((r) => el("tr", { class: r.rep_id === primary ? "primary" : r.rep_id === backup ? "backup" : "" },
+    el("td", {}, r.rep_id + (r.rep_id === primary ? " (primary)" : r.rep_id === backup ? " (backup)" : "")),
+    el("td", {}, el("span", { class: `pill bw-${r.bandwidth_tier}` }, r.bandwidth_tier)),
+    el("td", {}, r.stage_pressure), el("td", { class: "num" }, r.leads_remaining_today),
+    el("td", { class: "num" }, r.meetings_today_hours), el("td", {}, r.competitor_strengths.join(", ")),
+    el("td", {}, r.vertical_expertise.join(", ")), el("td", {}, r.notes || "")));
+  const where = `${shortlist.territory}, ${shortlist.segment}, language ${shortlist.language}` +
+    (shortlist.after_hours ? ", arrived after hours" : "") + `; ${shortlist.excluded.length} ${shortlist.excluded.length === 1 ? "rep" : "reps"} in the territory excluded`;
+  return el("div", { class: "card" }, el("h2", {}, "Capacity service: shortlisted reps"),
+    el("p", { class: "muted" }, where), el("table", {}, head, rows));
+}
+
+buildForm();
+document.getElementById("form").addEventListener("submit", send);
+loadSamples();
+</script>
+</body>
+</html>

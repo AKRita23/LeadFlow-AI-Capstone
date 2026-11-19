@@ -7,12 +7,14 @@ key or the call fails; it also keeps tests offline.
 """
 import os
 import re
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Protocol
 
 from leadflow.contracts import COMPETITORS, BuyingStage, NoteSignals
 from leadflow.models import Lead
 
 DEFAULT_MODEL = "claude-haiku-4-5"
+ENV_PATH = Path(__file__).resolve().parent.parent / ".env"
 TOOL_NAME = "record_note_signals"
 
 SYSTEM_PROMPT = """You read inbound sales leads for BeaconDesk, an AI support and live-chat widget.
@@ -70,17 +72,20 @@ class ClaudeExtractor:
         raise ValueError("Claude did not return note signals")
 
 
-def claude_from_env() -> Optional[ClaudeExtractor]:
-    """A ClaudeExtractor when ANTHROPIC_API_KEY is set (in the environment or .env), else None."""
+def anthropic_key_available() -> bool:
+    """True when ANTHROPIC_API_KEY is set, in the environment or in the repo's .env."""
     try:
         from dotenv import load_dotenv
 
-        load_dotenv()
+        load_dotenv(ENV_PATH)
     except ImportError:
         pass
-    if not os.environ.get("ANTHROPIC_API_KEY"):
-        return None
-    return ClaudeExtractor()
+    return bool(os.environ.get("ANTHROPIC_API_KEY"))
+
+
+def claude_from_env() -> Optional[ClaudeExtractor]:
+    """A ClaudeExtractor when an API key is available, else None."""
+    return ClaudeExtractor() if anthropic_key_available() else None
 
 
 _UNIT_DAYS = {"day": 1, "week": 7, "month": 30}

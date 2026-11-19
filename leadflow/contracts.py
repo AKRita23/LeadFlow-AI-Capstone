@@ -6,7 +6,8 @@ Each component takes only the inputs listed on its protocol below:
 - The capacity service sees the shortlist, the roster, and the prospect's
   domain, never buyer intent.
 - The routing agent sees both outputs plus the shortlist, and only proposes.
-  check_proposal is run before anything is committed.
+  check_proposal is run on its proposal; a rejected proposal is replaced by
+  the deterministic ranker's.
 
 Agent outputs are Pydantic models, so an LLM response can be validated with
 Model.model_validate_json(text), and Model.model_json_schema() can be passed
@@ -29,6 +30,8 @@ ToolName = Literal["theirstack", "posthog", "salesforce", "calendar", "llm"]
 BuyingStage = Literal["exploring", "evaluating", "ready_to_buy", "unknown"]
 
 ExtractionMethod = Literal["llm", "rules"]
+
+RoutingMethod = Literal["llm", "ranker"]
 
 ToolStatus = Literal["ok", "mocked", "timeout", "error", "skipped"]
 
@@ -268,6 +271,23 @@ class RoutingProposal(BaseModel):
     rep_brief: str = Field(min_length=1, max_length=3000)
 
 
+class RoutingOutcome(BaseModel):
+    """What the routing agent returns: the proposal, and how it was reached.
+
+    method is "llm" when Claude's proposal passed check_proposal, else "ranker".
+    problems lists why Claude's proposal was rejected, if it was. ranking is
+    the deterministic ranker's order of the shortlist, kept for audit and evals.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    proposal: RoutingProposal
+    method: RoutingMethod
+    llm_status: ToolStatus
+    problems: List[str] = Field(default_factory=list)
+    ranking: List[str] = Field(default_factory=list)
+
+
 class StepTiming(BaseModel):
     """How long one stage took, for the latency, fallback-rate, and demo views."""
 
@@ -289,8 +309,13 @@ class CapacityService(Protocol):
 
 class RoutingAgent(Protocol):
     def __call__(
-        self, lead: Lead, buyer: BuyerAssessment, capacity: CapacityMatrix, shortlist: EligibleReps
-    ) -> RoutingProposal: ...
+        self,
+        lead: Lead,
+        buyer: BuyerAssessment,
+        capacity: CapacityMatrix,
+        shortlist: EligibleReps,
+        related_rep_id: Optional[str] = None,
+    ) -> RoutingOutcome: ...
 
 
 def check_capacity(matrix: CapacityMatrix, shortlist: EligibleReps) -> List[str]:

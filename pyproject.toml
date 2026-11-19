@@ -17,3 +17,6 @@ dependencies = [
 
 [tool.setuptools]
 packages = ["leadflow"]
+
+[tool.setuptools.package-data]
+leadflow = ["static/*.html"]

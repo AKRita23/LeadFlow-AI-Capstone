@@ -1,10 +1,11 @@
 import pytest
 from fastapi.testclient import TestClient
 
-from leadflow.api import app, get_buyer_agent, get_store
+from leadflow.api import app, get_buyer_agent, get_routing_agent, get_store
 from leadflow.buyer_agent import BuyerContextAgent
 from leadflow.data_loader import load_enrichment, load_leads
 from leadflow.enrichment import MockPostHog, MockTheirStack
+from leadflow.routing import RoutingAgent
 from leadflow.store import DecisionStore
 
 client = TestClient(app)
@@ -17,6 +18,7 @@ def store(tmp_path):
     test_store = DecisionStore(tmp_path / "leadflow.db")
     app.dependency_overrides[get_store] = lambda: test_store
     app.dependency_overrides[get_buyer_agent] = lambda: RULES_AGENT
+    app.dependency_overrides[get_routing_agent] = lambda: RoutingAgent()
     yield test_store
     app.dependency_overrides.clear()
 
@@ -158,10 +160,21 @@ def test_new_prospect_gets_a_capacity_matrix_for_its_shortlist():
     assert capacity["tool_status"] == {"salesforce": "mocked", "calendar": "mocked"}
 
 
-def test_other_outcomes_skip_the_buyer_agent_and_capacity_service():
+def test_new_prospect_gets_a_routing_proposal_from_its_shortlist():
+    body = post().json()
+    routing = body["routing"]
+    shortlist = body["triage"]["shortlist"]["rep_ids"]
+    assert routing["method"] == "ranker"
+    assert routing["proposal"]["primary_rep_id"] in shortlist
+    assert routing["proposal"]["backup_rep_id"] in shortlist
+    assert body["assigned_rep_id"] is None
+
+
+def test_other_outcomes_skip_the_agents():
     body = post(company_size="1-15").json()
     assert body["buyer"] is None
     assert body["capacity"] is None
+    assert body["routing"] is None
 
 
 @pytest.mark.parametrize(
