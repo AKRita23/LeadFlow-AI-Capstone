@@ -59,9 +59,43 @@ Pick a primary rep and a backup rep from the shortlist. Weigh the buyer against 
 
 routing_rationale: two or three sentences on why the primary fits better than the others, citing
 the specific capacity and buyer facts you used.
-rep_brief: the handoff note the primary rep reads before calling. Plain text, under 120 words:
-who the buyer is, why they are urgent, their stack and competitor, what the note asks for, and
-one suggested opening angle. If after_hours is true, say the lead arrived outside working hours.
+rep_brief: the handoff note the primary rep reads before calling, laid out for a quick scan.
+Plain text, under 120 words, in this exact layout:
+
+<Name>, <role> at <company>
+<industry> · <headcount> people · <company_size> · <country>
+<urgency_tier> urgency · intent score <intent_score>
+
+Why now
+• <each deadline, seat count, or need stated in the note, one per bullet>
+• <web activity in one bullet, e.g. "6 pricing and 4 doc views in 48h, 5 sessions in 7d">
+• <what they looked at on the site, if the input says>
+
+Stack and competitor
+• <their stack>
+• <the competitor and what it does for them today>
+
+What they ask
+• <what the note or inquiry asks for>
+
+Opening angle
+• <one suggested first question or angle>
+
+Separate sections with one blank line. Each bullet starts with "• ", states one fact, and fits
+on one short line (15 words at most). Use only the five section titles above, in that order.
+
+Keep every fact the input gives about urgency, the note, and web activity: the layout changes how
+the brief reads, not what it says. State each fact once, in one place. The input often repeats a
+fact in other words (a deadline in the note and a "Needs to move in 14 days" signal, view counts
+and a "heavy pricing evaluation" summary, the role in the header and a "VP submitted the form"
+signal): keep the most specific wording and drop the rest. "What they ask" covers the request or
+use case only, not facts already listed under "Why now". Copy numbers and timeframes exactly as
+the input states them, and never merge two facts into one (a contract ending in 2 weeks and seats
+needed before Q1 stay two separate facts). Leave out a bullet, a section, or a part of a header
+line when the input has nothing for it, rather than writing that something is missing.
+
+If after_hours is true, end with the line "Arrived outside working hours." Do not use Markdown
+(no #, *, or bold). Do not add meetings, demos, dates, or next steps the input does not mention.
 
 The input does not state anyone's gender, so do not guess it from a name. In both fields, never
 write he, him, his, she, her, hers, himself, or herself for the buyer or a rep. Repeat the name,
@@ -241,28 +275,39 @@ def _reasons(row: RepCapacity, buyer: BuyerAssessment, industry: Set[str], relat
 
 
 def _template_brief(lead: Lead, buyer: BuyerAssessment, primary: RepCapacity, after_hours: bool) -> str:
+    """Same layout as the brief Claude writes: a header, then short bulleted sections."""
     firm = buyer.firmographics
-    company = lead.company
-    if firm and firm.industry:
-        size = f", {firm.headcount} people" if firm.headcount else ""
-        company += f" ({firm.industry}{size})"
-    lines = [
-        f"{lead.first_name} {lead.last_name}, {lead.role} at {company}, {lead.country}.",
-        f"Intent {buyer.intent_score}, {buyer.urgency_tier} urgency. Inquiry: {lead.inquiry_reason}.",
+    details = [
+        firm.industry if firm else None,
+        f"{firm.headcount} people" if firm and firm.headcount else None,
+        lead.country,
     ]
-    if buyer.note_summary:
-        lines.append(f"Note: {buyer.note_summary}")
+    sections = [
+        f"{lead.first_name} {lead.last_name}, {lead.role} at {lead.company}\n"
+        + " · ".join(d for d in details if d)
+    ]
+    why = [f"{buyer.urgency_tier} urgency, intent {buyer.intent_score}"] + list(buyer.buying_signals[:3])
+    sections.append(_section("Why now", why))
+    stack = []
     if firm and firm.tech_stack:
-        lines.append(f"Stack: {', '.join(firm.tech_stack)}.")
+        stack.append(", ".join(firm.tech_stack))
     if buyer.detected_competitor:
         edge = " You are strong against them." if _beats_competitor(primary, buyer) else ""
-        lines.append(f"Competitor: {buyer.detected_competitor}.{edge}")
-    if buyer.buying_signals:
-        lines.append("Signals: " + "; ".join(buyer.buying_signals[:4]) + ".")
+        stack.append(f"Competitor: {buyer.detected_competitor}.{edge}")
+    if stack:
+        sections.append(_section("Stack and competitor", stack))
+    ask = [f"Inquiry: {lead.inquiry_reason}"]
+    if buyer.note_summary:
+        ask.append(f"Note: {buyer.note_summary}")
+    sections.append(_section("What they ask", ask))
     if after_hours:
-        lines.append("Arrived outside working hours.")
-    lines.append(f"Contact: {lead.work_email}, {lead.phone_number}.")
-    return "\n".join(lines)
+        sections.append("Arrived outside working hours.")
+    sections.append(f"Contact: {lead.work_email}, {lead.phone_number}")
+    return "\n\n".join(sections)
+
+
+def _section(title: str, bullets: Sequence[str]) -> str:
+    return title + "\n" + "\n".join(f"• {b}" for b in bullets)
 
 
 def _beats_competitor(row: RepCapacity, buyer: BuyerAssessment) -> bool:
