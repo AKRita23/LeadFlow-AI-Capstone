@@ -150,8 +150,18 @@ def test_new_prospect_gets_a_buyer_assessment():
     assert sum(line["points"] for line in buyer["score_breakdown"]) == buyer["intent_score"]
 
 
-def test_other_outcomes_skip_the_buyer_agent():
-    assert post(company_size="1-15").json()["buyer"] is None
+def test_new_prospect_gets_a_capacity_matrix_for_its_shortlist():
+    body = post().json()
+    capacity = body["capacity"]
+    assert capacity["submission_id"] == "sub_test0001"
+    assert [row["rep_id"] for row in capacity["reps"]] == body["triage"]["shortlist"]["rep_ids"]
+    assert capacity["tool_status"] == {"salesforce": "mocked", "calendar": "mocked"}
+
+
+def test_other_outcomes_skip_the_buyer_agent_and_capacity_service():
+    body = post(company_size="1-15").json()
+    assert body["buyer"] is None
+    assert body["capacity"] is None
 
 
 @pytest.mark.parametrize(
