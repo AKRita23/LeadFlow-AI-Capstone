@@ -62,7 +62,10 @@ the specific capacity and buyer facts you used.
 rep_brief: the handoff note the primary rep reads before calling. Plain text, under 120 words:
 who the buyer is, why they are urgent, their stack and competitor, what the note asks for, and
 one suggested opening angle. If after_hours is true, say the lead arrived outside working hours.
-Refer to the buyer by name or role, not with gendered pronouns. Use only facts given in the input."""
+
+The input does not state anyone's gender, so do not guess it from a name. In both fields, never
+write he, him, his, she, her, hers, himself, or herself for the buyer or a rep. Repeat the name,
+use the role ("the VP"), or use they/their. Use only facts given in the input."""
 
 
 class _ProposalDraft(BaseModel):
