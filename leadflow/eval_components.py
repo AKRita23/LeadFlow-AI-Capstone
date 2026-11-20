@@ -16,7 +16,8 @@ Evaluators, by component:
   High stage pressure, no lead left today, no competitor or vertical strength) and Claude
   must pick someone else (code, one extra routing call).
 - Rep brief (routing agent): brief_completeness, every extracted signal with its exact number
-  (code); brief_format, the layout and length rules (code); brief_faithfulness (LLM judge).
+  (code); brief_format, the layout and length rules (code); brief_faithfulness (LLM judge);
+  brief_quality (LLM judge, 1–5 on tone / facts / usable-as-is).
 """
 import argparse
 import json
@@ -329,6 +330,70 @@ def brief_faithfulness(judge: Judge) -> Callable[[Dict[str, Any], Dict[str, Any]
     return evaluate
 
 
+BRIEF_QUALITY_SYSTEM = """You rate a sales rep handoff brief on three rubrics. Score each 1–5.
+
+Tone (1=robotic/unnatural, 3=ok but stiff, 5=warm professional conversational)
+Facts (1=wrong numbers/names or invented, 3=mostly right with gaps, 5=all key note/form facts correct)
+Usable as-is (1=needs full rewrite, 3=needs light edits, 5=rep could send/use almost unchanged)
+
+Return JSON only. average is the mean of the three scores."""
+
+BRIEF_QUALITY_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "tone": {"type": "integer", "minimum": 1, "maximum": 5},
+        "facts": {"type": "integer", "minimum": 1, "maximum": 5},
+        "usable": {"type": "integer", "minimum": 1, "maximum": 5},
+        "average": {"type": "number"},
+        "notes": {"type": "string"},
+    },
+    "required": ["tone", "facts", "usable", "average", "notes"],
+    "additionalProperties": False,
+}
+
+
+class BriefQualityJudge:
+    def __init__(self, client: Any = None, model: Optional[str] = None):
+        if client is None:
+            import anthropic
+
+            client = anthropic.Anthropic(timeout=120.0, max_retries=2)
+        self.client = client
+        self.model = model or os.environ.get("LEADFLOW_JUDGE_MODEL") or JUDGE_MODEL
+
+    def __call__(self, source: str, brief: str) -> Score:
+        response = self.client.messages.create(
+            model=self.model,
+            max_tokens=4000,
+            system=BRIEF_QUALITY_SYSTEM,
+            output_config={"format": {"type": "json_schema", "schema": BRIEF_QUALITY_SCHEMA}},
+            messages=[{"role": "user", "content": f"<source>\n{source}\n</source>\n\n<brief>\n{brief}\n</brief>"}],
+        )
+        if response.stop_reason != "end_turn":
+            return Score(None, f"judge stopped: {response.stop_reason}")
+        verdict = json.loads(next(block.text for block in response.content if block.type == "text"))
+        avg = float(verdict["average"])
+        explanation = (
+            f"tone={verdict['tone']} facts={verdict['facts']} usable={verdict['usable']}; {verdict['notes']}"
+        )
+        # Normalize 1–5 → 0–1 so summarize means stay comparable; label keeps the 1–5 average.
+        return Score(avg / 5.0, f"{avg:.1f}/5", explanation)
+
+
+def brief_quality(judge: BriefQualityJudge) -> Callable[[Dict[str, Any], Dict[str, Any]], Score]:
+    """Subjective 1–5 rubric: tone, facts from the note, usable as-is."""
+
+    def evaluate(output: Dict[str, Any], dataset_row: Dict[str, Any]) -> Score:
+        if output.get("routing_method") != "llm":
+            return Score(None, "ranker fallback" if "routing_method" in output else "not routed")
+        brief = output.get("rep_brief") or ""
+        if not brief.strip():
+            return Score(0.0, "empty brief", "no rep_brief")
+        return judge(json.dumps(output["routing_input"], indent=2), brief)
+
+    return evaluate
+
+
 def evaluators(use_judge: bool = True) -> Dict[str, Callable[[Dict[str, Any], Dict[str, Any]], Score]]:
     found = {
         "tier_accuracy": tier_accuracy,
@@ -342,6 +407,7 @@ def evaluators(use_judge: bool = True) -> Dict[str, Callable[[Dict[str, Any], Di
         judge = Judge()
         found["summary_faithfulness"] = summary_faithfulness(judge)
         found["brief_faithfulness"] = brief_faithfulness(judge)
+        found["brief_quality"] = brief_quality(BriefQualityJudge())
     return found
 
 

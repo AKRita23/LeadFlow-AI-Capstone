@@ -102,7 +102,7 @@ Routing and capacity have matching harnesses (same 15 shortlists):
 .venv/bin/python -m leadflow.eval_capacity         # contract checks (no LLM)
 ```
 
-The workbook has **no labeled “correct rep”** and **no expected bandwidth tiers**. Routing reports proposal validity and Claude↔ranker consistency; capacity reports `check_capacity` pass and exact shortlist coverage.
+Routing now also scores against `data/routing_gold.json` (10 hand-labeled primaries/backups). Capacity still has **no expected bandwidth tiers** — contract checks only. Buyer holdout slice: `python -m leadflow.eval_buyer --holdout` (3 leads in `data/buyer_holdout.json`). Failure-mode mini-set: `python -m leadflow.eval_failure_modes`.
 
 #### Arize Phoenix (quality traces)
 
@@ -162,6 +162,7 @@ A failed stage shows as an error span, so a routing timeout that fell back to th
 | Note extraction | `field_accuracy` | Code | Deadline, seats, competitor, compliance, and buying stage equal the hand labels exactly (stricter than `eval_buyer`, which compares at the scorer's granularity) |
 | Note extraction | `summary_faithfulness` | LLM judge | Every fact in the summary is in the inquiry reason or the note, with no two facts merged |
 | Note extraction | `tier_accuracy` | Code | The scored tier equals the workbook's expected tier |
+| Rep brief | `brief_quality` | LLM judge | 1–5 rubrics: tone, facts from the note, usable as-is |
 | Rep choice | `rule_compliance` | Code | No High-urgency lead on a Low-bandwidth rep when another fits, no available related rep skipped, a distinct backup |
 | Rep choice | `counterfactual_sensitivity` | Code | Once the chosen rep is made unable to take the lead, Claude picks someone else (one extra routing call) |
 | Rep brief | `brief_completeness` | Code | Every extracted signal is in the brief, numbers and timeframes copied exactly |
@@ -379,6 +380,9 @@ data/LeadFlow AI mock dataset.xlsx   Mock form submissions, expected outcomes, a
 data/mock_accounts.csv               Mock CRM accounts for the existing-account gate
 data/territories.csv                 Territory and language by country, and by state for the US
 data/buyer_signals_gold.json         Hand-labelled note signals for checking extraction
+data/routing_gold.json               Hand-labelled expected primary/backup for 10 leads
+data/buyer_holdout.json              Three leads for the buyer --holdout slice
+data/failure_modes.json              Five edge-case scenarios with expected behavior
 leadflow/models.py                   Shared record types
 leadflow/contracts.py                Agent inputs and outputs
 leadflow/data_loader.py              Loads the Excel dataset (including enrichment columns), account table, and territory file
@@ -390,6 +394,7 @@ leadflow/eval_buyer.py               Buyer agent evals against the workbook
 leadflow/eval_routing.py             Routing evals: proposal validity + Claude↔ranker consistency
 leadflow/eval_capacity.py            Capacity evals: check_capacity + shortlist coverage
 leadflow/eval_components.py          Component evals of the Claude calls (extraction, routing, brief), optional Phoenix experiment
+leadflow/eval_failure_modes.py       Five failure-mode / edge scenarios
 leadflow/phoenix_experiments.py      Shared Phoenix experiment helpers for eval_* --phoenix runs
 leadflow/observability.py            Optional Arize Phoenix tracing (LEADFLOW_PHOENIX / --phoenix), one trace per lead
 leadflow/capacity.py                 Capacity service: bandwidth, stage pressure, and fit per shortlisted rep
