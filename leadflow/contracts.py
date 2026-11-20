@@ -288,6 +288,33 @@ class RoutingOutcome(BaseModel):
     ranking: List[str] = Field(default_factory=list)
 
 
+AssignmentOutcome = Literal["assigned", "revops_queue"]
+
+SkipReason = Literal["not_on_shortlist", "not_on_roster", "inactive", "daily_cap"]
+
+
+class Assignment(BaseModel):
+    """What the commit step saved for a new prospect.
+
+    rep_id is the rep who got the lead, or None when no candidate was free and
+    the lead went to the RevOps queue. backup_rep_id is the next free candidate,
+    kept for the SLA watchdog. skipped lists the candidates that could not
+    take the lead, with the reason. already_committed is True when this submission
+    was committed before and the earlier assignment was returned unchanged.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    submission_id: str
+    outcome: AssignmentOutcome
+    rep_id: Optional[str] = None
+    backup_rep_id: Optional[str] = None
+    skipped: List[List[str]] = Field(default_factory=list)
+    intent_points: int = Field(ge=0)
+    committed_at: str
+    already_committed: bool = False
+
+
 class StepTiming(BaseModel):
     """How long one stage took, for the latency, fallback-rate, and demo views."""
 

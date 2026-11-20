@@ -50,7 +50,7 @@ STATUSES: Dict[str, Tuple[float, float, float, str]] = {
     "new_prospect": (1050, 130, 116, "new_prospect"),
 }
 
-PLANNED = {"commit", "handoff"}
+PLANNED = {"handoff"}
 
 STATUS_HEIGHT = 30
 
@@ -95,7 +95,7 @@ SCENARIOS = [
             ("buyer", "In parallel: intent 98, High (workbook: 95); capacity rates rep_003 High bandwidth, "
                       "strong vs Intercom"),
             ("routing", "The routing agent proposes rep_003, backup rep_027: High bandwidth, FinTech, strong vs Intercom"),
-            ("commit", "Both reps are checked against the shortlist, then the assignment is committed"),
+            ("commit", "Commit re-checks the shortlist and rep_003's daily cap under a lock, then assigns the lead"),
             ("handoff", "The rep gets the buyer brief, and the decision is saved"),
         ],
         "branch": {"from": "new_prospect", "via": "capacity", "to": "routing", "sync": "buyer"},

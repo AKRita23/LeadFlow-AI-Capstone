@@ -136,7 +136,7 @@ def test_new_prospect_returns_its_shortlist():
     body = post().json()
     shortlist = body["triage"]["shortlist"]
     assert body["reason"] == "5 eligible reps in EMEA-Southern."
-    assert body["assigned_rep_id"] is None
+    assert body["assigned_rep_id"] == body["assignment"]["rep_id"]
     assert shortlist["territory"] == "EMEA-Southern"
     assert set(shortlist["rep_ids"]) == {"rep_003", "rep_011", "rep_027", "rep_035", "rep_043"}
     assert shortlist["excluded"] == [["rep_019", "segment"]]
@@ -167,7 +167,8 @@ def test_new_prospect_gets_a_routing_proposal_from_its_shortlist():
     assert routing["method"] == "ranker"
     assert routing["proposal"]["primary_rep_id"] in shortlist
     assert routing["proposal"]["backup_rep_id"] in shortlist
-    assert body["assigned_rep_id"] is None
+    assert body["assigned_rep_id"] == routing["proposal"]["primary_rep_id"]
+    assert body["assignment"]["outcome"] == "assigned"
 
 
 def test_other_outcomes_skip_the_agents():
@@ -206,3 +207,35 @@ def test_resubmission_is_a_duplicate(store):
     assert body["triage"]["duplicate_of"] == "sub_test0001"
     assert body["assigned_rep_id"] == "rep_002"
     assert store.submission("sub_test0002")["outcome"] == "duplicate"
+
+
+def test_resending_a_committed_lead_keeps_its_assignment(store):
+    first = post().json()["assignment"]
+    again = post().json()["assignment"]
+    assert again["already_committed"] is True
+    assert again["rep_id"] == first["rep_id"]
+    assert store.rep_load("2026-11-16", "2026-W47")[first["rep_id"]][0] == 1
+
+
+def test_duplicate_returns_the_committed_rep(store):
+    rep = post().json()["assigned_rep_id"]
+    body = post(submission_id="sub_test0002", submitted_at="2026-11-17T11:58:23Z").json()
+    assert body["status"] == "duplicate"
+    assert body["assigned_rep_id"] == rep
+
+
+def test_assignments_change_the_next_leads_capacity(store):
+    before = {r["rep_id"]: r for r in post().json()["capacity"]["reps"]}
+    after = {r["rep_id"]: r for r in post(submission_id="sub_test0002", work_email="ana@finpay.es").json()["capacity"]["reps"]}
+    assert after["rep_003"]["leads_remaining_today"] == before["rep_003"]["leads_remaining_today"] - 1
+
+
+def test_demo_reset_clears_assignments(store):
+    post()
+    assert client.post("/demo/reset").json() == {"cleared_assignments": 1}
+    assert store.rep_load("2026-11-16", "2026-W47") == {}
+    assert store.submission("sub_test0001")["assigned_rep_id"] is None
+
+
+def test_other_outcomes_are_not_committed():
+    assert post(company_size="1-15").json()["assignment"] is None

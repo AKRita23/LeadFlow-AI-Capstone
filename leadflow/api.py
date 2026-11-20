@@ -10,8 +10,10 @@ SQLite. The response carries the triage outcome as status. New prospects
 also get a buyer assessment (Claude extracts the note signals when
 ANTHROPIC_API_KEY is set, rules do otherwise), a capacity matrix for the
 shortlisted reps, and a routing proposal (Claude when a key is set, with the
-deterministic ranker as the fallback). Nothing is assigned yet: the proposal
-is returned for the commit step.
+deterministic ranker as the fallback). The commit step then assigns the first
+free candidate under the live daily cap, or queues the lead for RevOps.
+Rep load is the workbook baseline plus committed assignments, so each
+assignment affects how the next lead is filtered and scored.
 """
 from functools import lru_cache
 from pathlib import Path
@@ -23,7 +25,8 @@ from pydantic import BaseModel
 
 from leadflow.buyer_agent import BuyerContextAgent
 from leadflow.capacity import CapacityService
-from leadflow.contracts import BuyerAssessment, CapacityMatrix, RoutingOutcome
+from leadflow.commit import commit_assignment, live_reps
+from leadflow.contracts import Assignment, BuyerAssessment, CapacityMatrix, RoutingOutcome
 from leadflow.data_loader import TerritoryMap, load_accounts, load_enrichment, load_reps, load_territories
 from leadflow.demo import demo_samples
 from leadflow.enrichment import MockPostHog, MockTheirStack
@@ -77,6 +80,7 @@ class SubmissionReceipt(BaseModel):
     buyer: Optional[BuyerAssessment] = None
     capacity: Optional[CapacityMatrix] = None
     routing: Optional[RoutingOutcome] = None
+    assignment: Optional[Assignment] = None
 
 
 @app.get("/health")
@@ -96,6 +100,12 @@ def samples() -> list:
     return demo_samples()
 
 
+@app.post("/demo/reset")
+def reset_demo(store: DecisionStore = Depends(get_store)) -> dict:
+    """Delete committed assignments so reps are back to the workbook's load."""
+    return {"cleared_assignments": store.clear_assignments()}
+
+
 @app.post("/leads", status_code=status.HTTP_202_ACCEPTED, response_model=SubmissionReceipt)
 def submit_lead(
     lead: Lead,
@@ -105,25 +115,30 @@ def submit_lead(
     capacity_service: CapacityService = Depends(get_capacity_service),
     routing_agent: RoutingAgent = Depends(get_routing_agent),
 ) -> SubmissionReceipt:
-    """Accept an inbound form submission, triage it, and assess new prospects.
+    """Accept an inbound form submission, triage it, assess and route new prospects, and commit the assignment.
 
     Every schema-valid submission returns 202, whatever the outcome.
     """
-    accounts, reps, territories = reference
+    accounts, roster, territories = reference
+    reps = live_reps(roster, store, lead.submitted_at, exclude_submission_id=lead.submission_id)
     result = triage(lead, accounts, reps, territories, store)
-    buyer = capacity = routing = None
+    buyer = capacity = routing = assignment = None
+    assigned_rep_id = result.assigned_rep_id
     if result.outcome == "new_prospect":
         buyer = buyer_agent(lead)
         capacity = capacity_service(result.shortlist, reps, lead.email_domain)
         routing = routing_agent(lead, buyer, capacity, result.shortlist, result.related_rep_id)
+        assignment = commit_assignment(lead, buyer, routing, result.shortlist, roster, store)
+        assigned_rep_id = assignment.rep_id
     return SubmissionReceipt(
         submission_id=lead.submission_id,
         status=result.outcome,
         reason=result.reason,
-        assigned_rep_id=result.assigned_rep_id,
+        assigned_rep_id=assigned_rep_id,
         lead=lead,
         triage=result,
         buyer=buyer,
         capacity=capacity,
         routing=routing,
+        assignment=assignment,
     )

@@ -1,15 +1,17 @@
-"""SQLite store for triaged submissions and routing decisions.
+"""SQLite store for triaged submissions, routing decisions, and assignments.
 
 submissions holds one row per submission_id, replaced on replay. The duplicate
 check reads it. routing_decisions appends a row each time an existing-account
-decision is saved, so replaying the same lead keeps each run.
+decision is saved, so replaying the same lead keeps each run. assignments
+holds one row per committed new prospect; with the workbook's counts as the
+baseline, it gives each rep's live load for the day and week.
 """
 import json
 import sqlite3
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Iterator, List, Optional
+from typing import Dict, Iterator, List, Optional, Tuple
 
 from leadflow.models import TIMESTAMP_FORMAT, Lead, OwnershipDecision, PriorSubmission, TriageResult
 
@@ -41,7 +43,29 @@ CREATE TABLE IF NOT EXISTS routing_decisions (
     brief TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS routing_decisions_submission ON routing_decisions (submission_id);
+
+CREATE TABLE IF NOT EXISTS assignments (
+    submission_id TEXT PRIMARY KEY,
+    committed_at TEXT NOT NULL,
+    day TEXT NOT NULL,
+    week TEXT NOT NULL,
+    outcome TEXT NOT NULL,
+    rep_id TEXT,
+    backup_rep_id TEXT,
+    skipped TEXT NOT NULL,
+    intent_points INTEGER NOT NULL,
+    urgency_tier TEXT NOT NULL,
+    method TEXT NOT NULL,
+    rationale TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS assignments_rep_day ON assignments (rep_id, day);
+CREATE INDEX IF NOT EXISTS assignments_rep_week ON assignments (rep_id, week);
 """
+
+ASSIGNMENT_COLUMNS = (
+    "submission_id", "committed_at", "day", "week", "outcome", "rep_id", "backup_rep_id", "skipped",
+    "intent_points", "urgency_tier", "method", "rationale",
+)
 
 
 class DecisionStore:
@@ -118,9 +142,78 @@ class DecisionStore:
                 "SELECT COUNT(*) FROM routing_decisions WHERE submission_id = ?", (submission_id,)
             ).fetchone()[0]
 
+    def rep_load(
+        self, day: str, week: str, exclude_submission_id: Optional[str] = None, conn: Optional[sqlite3.Connection] = None
+    ) -> Dict[str, Tuple[int, int]]:
+        """Leads committed to each rep on day, and intent points committed in week."""
+        query = (
+            "SELECT rep_id, SUM(day = ?) AS today, SUM(CASE WHEN week = ? THEN intent_points ELSE 0 END) AS points"
+            " FROM assignments WHERE rep_id IS NOT NULL AND submission_id != ? GROUP BY rep_id"
+        )
+        params = (day, week, exclude_submission_id or "")
+        if conn is not None:
+            rows = conn.execute(query, params).fetchall()
+        else:
+            with self._connect() as own:
+                rows = own.execute(query, params).fetchall()
+        return {row["rep_id"]: (row["today"] or 0, row["points"] or 0) for row in rows}
+
+    def assignment(self, submission_id: str, conn: Optional[sqlite3.Connection] = None) -> Optional[dict]:
+        query, params = "SELECT * FROM assignments WHERE submission_id = ?", (submission_id,)
+        if conn is not None:
+            row = conn.execute(query, params).fetchone()
+        else:
+            with self._connect() as own:
+                row = own.execute(query, params).fetchone()
+        if row is None:
+            return None
+        record = dict(row)
+        record["skipped"] = json.loads(record["skipped"])
+        return record
+
+    def insert_assignment(self, conn: sqlite3.Connection, record: dict) -> None:
+        """Save an assignment and set the submission's assigned rep. Call inside locked()."""
+        values = {**record, "skipped": json.dumps(record["skipped"])}
+        conn.execute(
+            f"INSERT INTO assignments ({', '.join(ASSIGNMENT_COLUMNS)})"
+            f" VALUES ({', '.join('?' for _ in ASSIGNMENT_COLUMNS)})",
+            tuple(values[column] for column in ASSIGNMENT_COLUMNS),
+        )
+        self.set_assigned_rep(conn, record["submission_id"], record["rep_id"])
+
+    def set_assigned_rep(self, conn: sqlite3.Connection, submission_id: str, rep_id: Optional[str]) -> None:
+        conn.execute("UPDATE submissions SET assigned_rep_id = ? WHERE submission_id = ?", (rep_id, submission_id))
+
+    def clear_assignments(self) -> int:
+        """Delete every assignment and unset assigned reps. For resetting the demo."""
+        with self._connect() as conn:
+            deleted = conn.execute("DELETE FROM assignments").rowcount
+            conn.execute("UPDATE submissions SET assigned_rep_id = NULL WHERE outcome = 'new_prospect'")
+        return deleted
+
+    @contextmanager
+    def locked(self) -> Iterator[sqlite3.Connection]:
+        """A write transaction that holds the database lock from the first read.
+
+        Two commits for the same rep cannot both read a free slot: the second
+        waits until the first has written its assignment.
+        """
+        conn = sqlite3.connect(self.path, timeout=10.0, isolation_level=None)
+        conn.row_factory = sqlite3.Row
+        try:
+            conn.execute("BEGIN IMMEDIATE")
+            try:
+                yield conn
+            except BaseException:
+                conn.execute("ROLLBACK")
+                raise
+            conn.execute("COMMIT")
+        finally:
+            conn.close()
+
     @contextmanager
     def _connect(self) -> Iterator[sqlite3.Connection]:
-        conn = sqlite3.connect(self.path)
+        conn = sqlite3.connect(self.path, timeout=10.0)
         conn.row_factory = sqlite3.Row
         try:
             with conn:

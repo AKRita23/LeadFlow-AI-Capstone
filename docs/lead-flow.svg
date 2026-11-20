@@ -114,7 +114,7 @@
 <rect class="node" x="658" y="372" width="124" height="56" rx="10"/>
 <text class="ntitle" x="720" y="397" text-anchor="middle">Routing agent</text>
 <text class="nsub" x="720" y="414" text-anchor="middle">primary and backup</text>
-<rect class="node planned" x="483" y="372" width="124" height="56" rx="10"/>
+<rect class="node" x="483" y="372" width="124" height="56" rx="10"/>
 <text class="ntitle" x="545" y="397" text-anchor="middle">Validate, commit</text>
 <text class="nsub" x="545" y="414" text-anchor="middle">reps on shortlist</text>
 <rect class="node planned" x="308" y="372" width="124" height="56" rx="10"/>
@@ -187,7 +187,7 @@
 <text class="ctext" x="40" y="531" opacity="0">The shortlist goes to the buyer agent and the capacity service at once<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.181641;0.220038" values="0;1;0"/></text>
 <text class="ctext" x="40" y="531" opacity="0">In parallel: intent 98, High (workbook: 95); capacity rates rep_003 High bandwidth, strong vs Intercom<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.220038;0.253263" values="0;1;0"/></text>
 <text class="ctext" x="40" y="531" opacity="0">The routing agent proposes rep_003, backup rep_027: High bandwidth, FinTech, strong vs Intercom<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.253263;0.284100" values="0;1;0"/></text>
-<text class="ctext" x="40" y="531" opacity="0">Both reps are checked against the shortlist, then the assignment is committed<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.284100;0.314937" values="0;1;0"/></text>
+<text class="ctext" x="40" y="531" opacity="0">Commit re-checks the shortlist and rep_003's daily cap under a lock, then assigns the lead<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.284100;0.314937" values="0;1;0"/></text>
 <text class="ctext" x="40" y="531" opacity="0">The rep gets the buyer brief, and the decision is saved<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.314937;0.346769" values="0;1;0"/></text>
 <text class="cwho" x="40" y="508" opacity="0">Test Bot, qa-automation-bot@test-domain-internal.org<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.354727;0.477200" values="0;1;0"/></text>
 <text class="ctext" x="40" y="531" opacity="0">An automated staging test submits the form<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.354727;0.385166" values="0;1;0"/></text>

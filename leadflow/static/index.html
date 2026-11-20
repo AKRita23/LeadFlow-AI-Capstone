@@ -27,6 +27,8 @@
   button { margin-top: 14px; width: 100%; padding: 9px; border: 0; border-radius: 6px; background: var(--blue);
            color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
   button:disabled { opacity: .6; cursor: wait; }
+  button.secondary { background: #fff; color: var(--text); border: 1px solid var(--line); font-weight: 500; }
+  #reset-note { margin-top: 6px; font-size: 12px; }
   .empty { color: var(--muted); }
   .banner { display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; }
   .status { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-weight: 600; padding: 2px 8px;
@@ -76,6 +78,8 @@
       <select id="sample"></select>
       <form id="form"></form>
       <button id="send" type="submit" form="form">Send lead</button>
+      <button id="reset" type="button" class="secondary">Reset assignments</button>
+      <div id="reset-note" class="muted"></div>
     </div>
   </section>
   <section id="result">
@@ -104,10 +108,11 @@ const FIELDS = [
 const STAGES = [
   ["schema", "Schema check"], ["screen", "Screening"], ["dup", "Same email?"], ["acct", "Existing account"],
   ["filter", "Rep filter"], ["buyer", "Buyer agent"], ["capacity", "Capacity service"], ["routing", "Routing agent"],
+  ["commit", "Commit"],
 ];
 const DECIDED_AT = {
   dropped: "screen", self_serve: "screen", duplicate: "dup", preserve_owner: "acct",
-  ownership_exception: "acct", no_eligible_reps: "filter", new_prospect: "routing",
+  ownership_exception: "acct", no_eligible_reps: "filter", new_prospect: "commit",
 };
 
 let samples = [];
@@ -196,11 +201,11 @@ async function send(event) {
   }
 }
 
-function stageStrip(decidedAt) {
+function stageStrip(decidedAt, allPassed = false) {
   const index = STAGES.findIndex(([key]) => key === decidedAt);
   return el("div", { class: "stages" }, STAGES.map(([key, text], i) => {
     let cls = "stage";
-    if (i < index || (decidedAt === "routing" && i === index)) cls += " passed";
+    if (i < index || (allPassed && i === index)) cls += " passed";
     else if (i === index) cls += " decided";
     return el("span", { class: cls }, text);
   }));
@@ -217,13 +222,17 @@ function render(httpStatus, body, ms) {
       stageStrip("schema"), el("ul", { class: "errors" }, errors)));
     return;
   }
-  const ok = body.status === "new_prospect" || body.status === "preserve_owner";
+  const assignment = body.assignment;
+  const assigned = assignment && assignment.outcome === "assigned";
+  const ok = assigned || body.status === "preserve_owner";
   out.append(el("div", { class: "card" },
     el("div", { class: "banner" },
       el("span", { class: ok ? "status ok" : "status" }, body.status),
       el("span", {}, body.reason),
+      body.assigned_rep_id && el("strong", {}, `Assigned to ${body.assigned_rep_id}`),
       el("span", { class: "muted" }, `${ms} ms`)),
-    stageStrip(DECIDED_AT[body.status])));
+    stageStrip(DECIDED_AT[body.status], assigned)));
+  if (assignment) out.append(assignmentCard(assignment, body.routing));
 
   const ownership = body.triage.ownership;
   if (ownership) {
@@ -240,6 +249,32 @@ function render(httpStatus, body, ms) {
   if (body.capacity) out.append(capacityCard(body.capacity, body.triage.shortlist, body.routing));
   out.append(el("div", { class: "card" }, el("details", {}, el("summary", {}, "Full response"),
     el("pre", { class: "json" }, JSON.stringify(body, null, 2)))));
+}
+
+const SKIP_REASONS = {
+  daily_cap: "at the daily cap", inactive: "not active", not_on_roster: "not on the roster",
+  not_on_shortlist: "not on the shortlist",
+};
+
+function assignmentCard(a, routing) {
+  const changed = !a.already_committed && a.rep_id && routing && a.rep_id !== routing.proposal.primary_rep_id;
+  return el("div", { class: "card" }, el("h2", {}, "Commit"),
+    a.outcome === "assigned"
+      ? el("div", { class: "banner" }, el("span", { class: "score" }, a.rep_id),
+          a.backup_rep_id && el("span", { class: "muted" }, `backup ${a.backup_rep_id}`))
+      : el("p", {}, "Sent to the RevOps queue: no shortlisted rep has a free slot today."),
+    changed && el("p", {}, `The proposed rep ${routing.proposal.primary_rep_id} could not take the lead, so it went to the next free candidate.`),
+    a.skipped.length > 0 && el("p", { class: "muted" },
+      "Skipped: " + a.skipped.map(([rep, why]) => `${rep} (${SKIP_REASONS[why] || why})`).join(", ")),
+    el("p", { class: "muted" }, a.already_committed
+      ? `Already committed at ${a.committed_at}; returned unchanged.`
+      : `Committed at ${a.committed_at}. Adds 1 lead today and ${a.intent_points} intent points this week to the rep's load.`));
+}
+
+async function resetAssignments() {
+  const note = document.getElementById("reset-note");
+  const body = await (await fetch("/demo/reset", { method: "POST" })).json();
+  note.textContent = `Cleared ${body.cleared_assignments} ${body.cleared_assignments === 1 ? "assignment" : "assignments"}; reps are back to the workbook load.`;
 }
 
 function buyerCard(buyer) {
@@ -287,6 +322,7 @@ function capacityCard(capacity, shortlist, routing) {
 
 buildForm();
 document.getElementById("form").addEventListener("submit", send);
+document.getElementById("reset").addEventListener("click", resetAssignments);
 loadSamples();
 </script>
 </body>
