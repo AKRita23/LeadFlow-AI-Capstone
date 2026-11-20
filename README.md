@@ -285,7 +285,7 @@ The existing-account path is not counted toward a rep's daily cap: the owner kee
 
 The clock restarts at each reassignment. A reassignment moves the lead's daily count from the first rep to the backup, so the first rep gets the slot back. Both reps, and RevOps on escalation, get a message. The spec sets 5 to 10 minutes for High urgency; the Medium and Low limits are team assumptions.
 
-The watchdog runs when `POST /watchdog/run` is called, not on a timer. `minutes_ahead` pretends that time has passed, so the demo can show a reassignment without waiting; the events it writes are stamped with that pretend time. On the demo page, send a High-urgency lead such as FinPay, then run the watchdog with 11 minutes: the lead moves from rep_003 to rep_027 and both messages appear in the outbox. Mark the lead Working first and the watchdog leaves it alone.
+The watchdog runs when `POST /watchdog/run` is called, not on a timer. `minutes_ahead` pretends that time has passed, so the demo can show a reassignment without waiting; the events it writes are stamped with that pretend time. On the demo page, send FinPay and click **Simulate 11 min later**: the lead moves from rep_003 to rep_027 and both reps get a message. Click **Simulate another 11 min** and it is escalated to RevOps. Mark the lead Working first and the watchdog leaves it alone.
 
 ## Setup
 
@@ -305,15 +305,15 @@ cp .env.example .env   # then add your ANTHROPIC_API_KEY
 .venv/bin/uvicorn leadflow.api:app --reload
 ```
 
-The demo page is at http://127.0.0.1:8000/. Pick a sample lead (the 20 workbook submissions, plus scenarios for an existing customer, two account owners, a closed-lost account, a competitor's address, an unmapped country, and a duplicate), edit it if you like, and send it. The page shows which stage decided the lead, the buyer score and the points behind it, the capacity of each shortlisted rep, and the routing proposal with its rationale and brief. A link such as `http://127.0.0.1:8000/#send=sub_8f92a1c4` picks that sample and sends it straight away, which is handy for a short live demo (Demo Day allows about 1–2 minutes for a working implementation).
+The demo page is at http://127.0.0.1:8000/. Click one of the eight scenario buttons (two new prospects, a test bot, a student, an existing customer, two account owners, a duplicate, and an unmapped country) to send that lead. The page leads with the outcome in one line (who the lead is, which rep got it, and why), shows the five steps with the one that decided the lead, and then three cards: **Buyer** (score, note summary, biggest reasons), **Rep match** (chosen rep and backup, Claude's rationale, a compact comparison of the shortlisted reps), and **Handoff** (status, Mark Working, Simulate 11 min later, and the brief the rep received). Score breakdowns, full rep details, and the raw JSON response are one click away. **Edit lead** opens the full form, with all 26 sample leads, for trying your own; **Reset demo** clears assignments, messages, and status history. A link such as `http://127.0.0.1:8000/#send=sub_8f92a1c4` picks that sample and sends it straight away, which is handy for a short live demo (Demo Day allows about 1–2 minutes for a working implementation).
 
 For poster metrics without the UI, `GET /demo/eval-summary` returns workbook buyer, routing (ranker), and capacity numbers (same as the three `eval_*` modules offline).
 
 <p align="center">
-  <img src="docs/demo-page.png" alt="The demo page after sending the FinPay lead: every stage passed, the lead committed to rep_003 with backup rep_027, its handoff message and New status with Mark Working and Mark Disqualified buttons, buyer score 98 High with its breakdown, Claude's routing rationale and rep brief, and the capacity table of the five shortlisted reps" width="100%">
+  <img src="docs/demo-page.png" alt="The demo page after sending the FinPay lead: scenario buttons, a one-line result routing Elena Rostova to rep_003 in 7.4 seconds with the reasons, all five steps passed, and Buyer, Rep match, and Handoff cards" width="100%">
 </p>
 
-The screenshot shows the FinPay lead (`sub_8f92a1c4`) with Claude reading the note and proposing the route. The lead is committed to rep_003, the brief is sent to the outbox, and its status is New until the rep marks it Working. The request took about 10 seconds end to end.
+The screenshot shows the FinPay lead (`sub_8f92a1c4`) with Claude reading the note and proposing the route: assigned to rep_003 with backup rep_027, the brief sent, and the lead at New until the rep marks it Working. The request took about 7 seconds end to end.
 
 Interactive API docs are at http://127.0.0.1:8000/docs. The `POST /leads` form there is pre-filled with a valid example lead.
 
@@ -345,7 +345,7 @@ A `202` response has these fields:
 | `assignment` | For `new_prospect` only: the committed `Assignment`, with the rep, backup, any skipped candidates and why, and whether it was committed earlier; otherwise null |
 | `tracking` | For new prospects and existing accounts: the `LeadTracking`, with status, status history, and the messages sent; otherwise null |
 
-Submissions and assignments are recorded in `data/leadflow.db`. Delete that file to start over; otherwise resending the same email within 30 days returns `duplicate`. To clear only the assignments, use the demo page's Reset assignments button or `POST /demo/reset`.
+Submissions and assignments are recorded in `data/leadflow.db`. Delete that file to start over; otherwise resending the same email within 30 days returns `duplicate`. To clear only the assignments, messages, and status history, use the demo page's Reset demo button or `POST /demo/reset`.
 
 Example:
 
