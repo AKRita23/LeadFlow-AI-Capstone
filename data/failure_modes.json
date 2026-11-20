@@ -1,0 +1,105 @@
+{
+  "_about": "Five failure-mode / edge scenarios with expected behavior. Used by leadflow.eval_failure_modes. Not a large dataset — covers the most likely issues for Demo Day.",
+  "cases": [
+    {
+      "id": "fm_empty_note",
+      "title": "Empty free-text note",
+      "lead": {
+        "submission_id": "sub_fm_empty",
+        "submitted_at": "2026-11-16T14:00:00Z",
+        "first_name": "Alex",
+        "last_name": "Ng",
+        "work_email": "alex@emptynote.example",
+        "role": "Director",
+        "country": "US",
+        "state": "CA",
+        "company": "EmptyNote Co",
+        "company_size": "51-250",
+        "phone_number": "+14155550100",
+        "inquiry_reason": "I want to evaluate BeaconDesk for my organization",
+        "free_text_note": null
+      },
+      "expect": {
+        "outcome": "new_prospect",
+        "buyer_extraction_ok_without_note": true,
+        "routing_proposal_valid": true,
+        "notes": "Skip LLM extract when note empty; still score from form/enrichment and route."
+      }
+    },
+    {
+      "id": "fm_messy_competitor",
+      "title": "Messy competitor spelling",
+      "lead": {
+        "submission_id": "sub_fm_comp",
+        "submitted_at": "2026-11-16T14:05:00Z",
+        "first_name": "Sam",
+        "last_name": "Ortiz",
+        "work_email": "sam@messycrm.example",
+        "role": "VP",
+        "country": "ES",
+        "state": null,
+        "company": "MessyCRM Labs",
+        "company_size": "101-500",
+        "phone_number": "+34915550101",
+        "inquiry_reason": "I want to evaluate BeaconDesk for my organization",
+        "free_text_note": "Swapping off intercom.com / Intercom-ish chat next month; need ~35 seats."
+      },
+      "expect": {
+        "outcome": "new_prospect",
+        "competitor_detected_or_null_ok": true,
+        "routing_proposal_valid": true,
+        "notes": "Extraction should normalize or safely miss; must not crash; proposal still valid."
+      }
+    },
+    {
+      "id": "fm_high_all_low_bandwidth",
+      "title": "High urgency with only Low-bandwidth reps",
+      "lead": {
+        "submission_id": "sub_fm_lowbw",
+        "submitted_at": "2026-11-16T14:10:00Z",
+        "first_name": "Jordan",
+        "last_name": "Lee",
+        "work_email": "jordan@urgentco.example",
+        "role": "VP",
+        "country": "US",
+        "state": "NY",
+        "company": "UrgentCo",
+        "company_size": "101-500",
+        "phone_number": "+12125550102",
+        "inquiry_reason": "I want to evaluate BeaconDesk for my organization",
+        "free_text_note": "Contract ends in 5 days — need to buy this week, 50 seats."
+      },
+      "expect": {
+        "outcome": "new_prospect",
+        "force_all_shortlist_low_bandwidth": true,
+        "still_picks_a_shortlist_rep": true,
+        "routing_proposal_valid": true,
+        "notes": "When every shortlisted rep is Low bandwidth, still pick someone on the shortlist (no inventing reps)."
+      }
+    },
+    {
+      "id": "fm_after_hours",
+      "title": "After-hours submission",
+      "workbook_lead_id": "sub_9b31c2d8",
+      "expect": {
+        "outcome": "new_prospect",
+        "after_hours": true,
+        "brief_mentions_after_hours_when_llm": true,
+        "routing_proposal_valid": true,
+        "notes": "HealthScale workbook lead is after-hours; brief should end with the after-hours line when Claude writes it."
+      }
+    },
+    {
+      "id": "fm_related_rep",
+      "title": "Same-domain related rep preferred",
+      "workbook_lead_id": "sub_8f92a1c4",
+      "related_rep_id": "rep_027",
+      "expect": {
+        "outcome": "new_prospect",
+        "primary_is_related_when_eligible": true,
+        "routing_proposal_valid": true,
+        "notes": "If related_rep_id is on the shortlist and can take the lead, ranker/Claude should prefer them."
+      }
+    }
+  ]
+}

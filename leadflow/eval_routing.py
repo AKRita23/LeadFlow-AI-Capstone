@@ -4,11 +4,12 @@
     python -m leadflow.eval_routing --llm        # Claude proposals (needs ANTHROPIC_API_KEY)
     python -m leadflow.eval_routing --llm --phoenix
 
-The workbook has no labeled “correct rep.” Metrics are:
+Metrics are:
 - proposal validity (check_proposal)
 - whether Claude was used vs ranker fallback
 - how often Claude’s primary matches the deterministic ranker’s first choice
   (consistency, not accuracy)
+- primary/backup match vs data/routing_gold.json when a label exists (accuracy)
 - brief / rationale present, latency
 
 Buyer assessment uses rule extraction by default so this isolates routing.
@@ -16,20 +17,29 @@ Buyer assessment uses rule extraction by default so this isolates routing.
 from __future__ import annotations
 
 import argparse
+import json
 import statistics
 import time
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence
 
 from leadflow.buyer_agent import BuyerContextAgent
 from leadflow.capacity import CapacityService
 from leadflow.contracts import BuyerAssessment, CapacityMatrix, RoutingOutcome, check_proposal
-from leadflow.data_loader import load_accounts, load_enrichment, load_leads, load_reps, load_territories
+from leadflow.data_loader import DATA_DIR, load_accounts, load_enrichment, load_leads, load_reps, load_territories
 from leadflow.eligibility import filter_eligible_reps
 from leadflow.enrichment import MockPostHog, MockTheirStack
 from leadflow.eval_capacity import labeled_prospects
 from leadflow.models import EligibleReps, Lead, Rep
 from leadflow.routing import RoutingAgent, router_from_env
+
+ROUTING_GOLD_PATH = DATA_DIR / "routing_gold.json"
+
+
+def load_routing_gold(path: Path = ROUTING_GOLD_PATH) -> Dict[str, Dict[str, Any]]:
+    raw = json.loads(path.read_text())
+    return {key: value for key, value in raw.items() if not key.startswith("_")}
 
 
 @dataclass
@@ -120,7 +130,7 @@ def run(
     return cases
 
 
-def summarize(cases: Sequence[Case]) -> Dict[str, float]:
+def summarize(cases: Sequence[Case], gold: Optional[Dict[str, Dict[str, Any]]] = None) -> Dict[str, float]:
     n = len(cases) or 1
     valid = [not check_proposal(c.outcome.proposal, c.shortlist) for c in cases]
     llm = [c.outcome.method == "llm" for c in cases]
@@ -133,6 +143,14 @@ def summarize(cases: Sequence[Case]) -> Dict[str, float]:
         c.outcome.proposal.primary_rep_id == (c.outcome.ranking[0] if c.outcome.ranking else None)
         for c in llm_cases
     ]
+    gold = gold or {}
+    gold_cases = [c for c in cases if c.lead.submission_id in gold]
+    gold_primary = [
+        c.outcome.proposal.primary_rep_id == gold[c.lead.submission_id]["expected_primary"] for c in gold_cases
+    ]
+    gold_backup = [
+        c.outcome.proposal.backup_rep_id == gold[c.lead.submission_id].get("expected_backup") for c in gold_cases
+    ]
     return {
         "leads": len(cases),
         "proposal_valid_rate": sum(valid) / n,
@@ -140,6 +158,9 @@ def summarize(cases: Sequence[Case]) -> Dict[str, float]:
         "fallback_rate": sum(c.outcome.method == "ranker" for c in cases) / n,
         "ranker_primary_match_rate": sum(ranker_match) / n,
         "llm_vs_ranker_match_rate": (sum(llm_match) / len(llm_match)) if llm_match else float("nan"),
+        "gold_labeled_leads": len(gold_cases),
+        "gold_primary_match_rate": (sum(gold_primary) / len(gold_primary)) if gold_primary else float("nan"),
+        "gold_backup_match_rate": (sum(gold_backup) / len(gold_backup)) if gold_backup else float("nan"),
         "brief_nonempty_rate": sum(bool(c.outcome.proposal.rep_brief.strip()) for c in cases) / n,
         "rationale_nonempty_rate": sum(bool(c.outcome.proposal.routing_rationale.strip()) for c in cases) / n,
         "latency_ms_p50": statistics.median(c.latency_ms for c in cases),
@@ -284,18 +305,25 @@ def main() -> None:
         tracer=tracer,
     )
 
-    print(f"{'lead':14} {'company':24} {'method':7} {'primary':8} {'ranker':8} {'ok':3}")
+    gold = load_routing_gold()
+    print(f"{'lead':14} {'company':24} {'method':7} {'primary':8} {'ranker':8} {'gold':8} {'ok':3}")
     for c in cases:
         primary = c.outcome.proposal.primary_rep_id
         ranker = c.outcome.ranking[0] if c.outcome.ranking else "-"
+        expected = gold.get(c.lead.submission_id, {}).get("expected_primary", "-")
         ok = "yes" if not check_proposal(c.outcome.proposal, c.shortlist) else "NO"
-        mark = "" if primary == ranker else "  <-- vs ranker"
+        marks = []
+        if primary != ranker:
+            marks.append("vs ranker")
+        if expected != "-" and primary != expected:
+            marks.append("vs gold")
+        mark = f"  <-- {', '.join(marks)}" if marks else ""
         print(
             f"{c.lead.submission_id:14} {c.lead.company[:24]:24} {c.outcome.method:7} "
-            f"{primary:8} {ranker:8} {ok:3}{mark}"
+            f"{primary:8} {ranker:8} {expected:8} {ok:3}{mark}"
         )
     print()
-    metrics = summarize(cases)
+    metrics = summarize(cases, gold)
     for name, value in metrics.items():
         if isinstance(value, float):
             if value != value:  # NaN

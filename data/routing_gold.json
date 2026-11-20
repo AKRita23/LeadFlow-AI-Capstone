@@ -1,0 +1,63 @@
+{
+  "_about": "Hand-labeled expected primary (and backup) for a subset of workbook leads. Used to score routing accuracy — not just Claude↔ranker consistency. Labels follow the routing prompt: High urgency avoid Low bandwidth when possible, prefer competitor strength and vertical fit, require a distinct backup. Team-reviewed starting points; revise if the roster changes.",
+  "sub_8f92a1c4": {
+    "company": "FinPay Technologies",
+    "expected_primary": "rep_003",
+    "expected_backup": "rep_027",
+    "why": "High urgency Intercom displacement; rep_003 is the Intercom specialist with bandwidth."
+  },
+  "sub_9b31c2d8": {
+    "company": "HealthScale Solutions",
+    "expected_primary": "rep_001",
+    "expected_backup": "rep_025",
+    "why": "High urgency Zendesk / healthcare; after-hours shortlist still needs a primary from eligible reps."
+  },
+  "sub_4a77e5f1": {
+    "company": "LogiQuick Logistics",
+    "expected_primary": "rep_036",
+    "expected_backup": "rep_020",
+    "why": "Small shortlist (2); Crisp competitor fit on the top-ranked eligible rep."
+  },
+  "sub_3c55d8e9": {
+    "company": "Nexus Cloud",
+    "expected_primary": "rep_038",
+    "expected_backup": "rep_022",
+    "why": "Empty free-text note — route from form + enrichment only; Medium urgency."
+  },
+  "sub_7d12f3a6": {
+    "company": "RetailHub D2C",
+    "expected_primary": "rep_022",
+    "expected_backup": "rep_038",
+    "why": "High urgency Tidio replace / ready-to-buy; vertical + bandwidth favor rep_022."
+  },
+  "sub_6m33q9r4": {
+    "company": "PayFlow Middle East",
+    "expected_primary": "rep_043",
+    "expected_backup": "rep_003",
+    "why": "High urgency Zendesk + compliance residency; EMEA-Southern shortlist top fit."
+  },
+  "sub_4p77m1c6": {
+    "company": "MercadoLocal Brazil",
+    "expected_primary": "rep_007",
+    "expected_backup": "rep_031",
+    "why": "High urgency LATAM Zendesk displace; LATAM shortlist primary."
+  },
+  "sub_8t22f6d9": {
+    "company": "BioCare Digital Health",
+    "expected_primary": "rep_005",
+    "expected_backup": "rep_045",
+    "why": "High urgency healthcare compliance (HIPAA/GDPR); after-hours Northern shortlist."
+  },
+  "sub_1z33n5s8": {
+    "company": "PropTech Solutions UK",
+    "expected_primary": "rep_006",
+    "expected_backup": "rep_030",
+    "why": "Medium exploring / Drift; small UK shortlist — continuity and vertical on rep_006."
+  },
+  "sub_3w88r7h5": {
+    "company": "DevStack Tools",
+    "expected_primary": "rep_033",
+    "expected_backup": "rep_041",
+    "why": "High urgency Intercom on NA-West; developer tooling vertical on rep_033."
+  }
+}

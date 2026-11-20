@@ -1,0 +1,13 @@
+{
+  "_about": "Three workbook leads held out of casual tuning talk-track. Run with: python -m leadflow.eval_buyer --holdout. Full suite still uses all 15; this reports the holdout slice alone.",
+  "submission_ids": [
+    "sub_3c55d8e9",
+    "sub_9x11k4v7",
+    "sub_5q99w3k2"
+  ],
+  "companies": [
+    "Nexus Cloud",
+    "Tokyo Smart Logistics",
+    "TravelPass Europe"
+  ]
+}

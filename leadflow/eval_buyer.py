@@ -31,6 +31,7 @@ from leadflow.models import Lead, LeadExpectation
 from leadflow.scoring import DEADLINE_WINDOW_DAYS
 
 GOLD_PATH = DATA_DIR / "buyer_signals_gold.json"
+HOLDOUT_PATH = DATA_DIR / "buyer_holdout.json"
 
 SIGNAL_FIELDS = ("deadline", "seats", "competitor", "compliance", "buying_stage")
 
@@ -38,6 +39,11 @@ SIGNAL_FIELDS = ("deadline", "seats", "competitor", "compliance", "buying_stage"
 def load_gold(path: Path = GOLD_PATH) -> Dict[str, NoteSignals]:
     raw = json.loads(path.read_text())
     return {key: NoteSignals.model_validate(value) for key, value in raw.items() if not key.startswith("_")}
+
+
+def load_holdout_ids(path: Path = HOLDOUT_PATH) -> List[str]:
+    raw = json.loads(path.read_text())
+    return list(raw.get("submission_ids") or [])
 
 
 def signal_agreement(got: NoteSignals, gold: NoteSignals) -> Dict[str, bool]:
@@ -316,6 +322,11 @@ def main() -> None:
     parser.add_argument("--llm", action="store_true", help="extract signals with Claude instead of rules")
     parser.add_argument("--repeat", type=int, default=1, help="runs per lead, for replay consistency")
     parser.add_argument(
+        "--holdout",
+        action="store_true",
+        help="only the 3 leads in data/buyer_holdout.json (slice for untuned talk-track)",
+    )
+    parser.add_argument(
         "--phoenix",
         action="store_true",
         help="trace each lead and push quality annotations to Arize Phoenix",
@@ -330,6 +341,12 @@ def main() -> None:
         tracer = get_tracer("leadflow.eval_buyer")
 
     leads, expectations = load_leads()
+    if args.holdout:
+        holdout = set(load_holdout_ids())
+        pairs = [(lead, exp) for lead, exp in zip(leads, expectations) if lead.submission_id in holdout]
+        leads = [p[0] for p in pairs]
+        expectations = [p[1] for p in pairs]
+        print(f"Holdout slice: {len(leads)} leads from {HOLDOUT_PATH.name}")
     gold = load_gold()
     cases = run(default_agent(args.llm), leads, expectations, args.repeat, tracer=tracer, gold=gold)
 
