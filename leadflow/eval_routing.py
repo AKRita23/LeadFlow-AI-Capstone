@@ -344,6 +344,13 @@ def main() -> None:
 
         leads_by_id = {lead.submission_id: lead for lead, _ in pairs}
         shortlists_by_id = {lead.submission_id: shortlist for lead, shortlist in pairs}
+        model_name = "ranker"
+        if args.llm:
+            import os
+
+            from leadflow.routing import DEFAULT_MODEL
+
+            model_name = os.environ.get("LEADFLOW_ROUTING_MODEL") or DEFAULT_MODEL
         run_experiment(
             dataset_name="leadflow-routing-workbook",
             task=routing_experiment_task(
@@ -355,12 +362,12 @@ def main() -> None:
                 reps,
             ),
             evaluators=routing_evaluators(),
-            experiment_name="routing-ranker" if not args.llm else "routing-llm",
+            experiment_name="routing-ranker" if not args.llm else f"routing-{model_name}",
             experiment_description=(
-                "Routing on workbook shortlists: proposal validity and Claude↔ranker consistency "
-                "(no labeled correct rep)."
+                "Routing on workbook shortlists: proposal validity, Claude↔ranker consistency, "
+                "and match vs data/routing_gold.json when labeled."
             ),
-            experiment_metadata={"router": "llm" if args.llm else "ranker"},
+            experiment_metadata={"router": "ranker" if not args.llm else "llm", "model": model_name},
             timeout=600 if args.llm else 120,
         )
         print("Phoenix UI: http://127.0.0.1:6006")
