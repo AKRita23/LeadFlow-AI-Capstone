@@ -119,8 +119,8 @@ class ClaudeRouter:
             model=self.model,
             max_tokens=4000,
             system=SYSTEM_PROMPT,
+            # Haiku rejects output_config.effort; keep structured JSON only.
             output_config={
-                "effort": "low",
                 "format": {"type": "json_schema", "schema": _output_schema(shortlist.rep_ids)},
             },
             messages=[{"role": "user", "content": json.dumps(context, indent=2)}],
