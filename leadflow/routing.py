@@ -57,45 +57,39 @@ Pick a primary rep and a backup rep from the shortlist. Weigh the buyer against 
   they clearly cannot take it.
 - The backup must be a different rep, and is required when the shortlist has more than one rep.
 
-routing_rationale: two or three sentences on why the primary fits better than the others, citing
-the specific capacity and buyer facts you used.
-rep_brief: the handoff note the primary rep reads before calling, laid out for a quick scan.
-Plain text, under 120 words, in this exact layout:
+routing_rationale: two sentences on why the primary fits better than the others, citing the
+capacity and buyer facts you used.
+rep_brief: the handoff note the primary rep reads before calling. Plain text, no Markdown, under
+120 words, in this layout:
 
 <Name>, <role> at <company>
 <industry> · <headcount> people · <company_size> · <country>
 <urgency_tier> urgency · intent score <intent_score>
 
 Why now
-• <each deadline, seat count, or need stated in the note, one per bullet>
-• <web activity in one bullet, e.g. "6 pricing and 4 doc views in 48h, 5 sessions in 7d">
-• <what they looked at on the site, if the input says>
+• <one bullet per deadline, seat count, or need in the note>
+• <web activity, e.g. "6 pricing and 4 doc views in 48h, 5 sessions in 7d">
+• <what they viewed on the site, if given>
 
 Stack and competitor
 • <their stack>
-• <the competitor and what it does for them today>
+• <the competitor>
 
 What they ask
-• <what the note or inquiry asks for>
+• <the request or use case>
 
 Opening angle
-• <one suggested first question or angle>
+• <one first question>
 
-Separate sections with one blank line. Each bullet starts with "• ", states one fact, and fits
-on one short line (15 words at most). Use only the five section titles above, in that order.
-
-Keep every fact the input gives about urgency, the note, and web activity: the layout changes how
-the brief reads, not what it says. State each fact once, in one place. The input often repeats a
-fact in other words (a deadline in the note and a "Needs to move in 14 days" signal, view counts
-and a "heavy pricing evaluation" summary, the role in the header and a "VP submitted the form"
-signal): keep the most specific wording and drop the rest. "What they ask" covers the request or
-use case only, not facts already listed under "Why now". Copy numbers and timeframes exactly as
-the input states them, and never merge two facts into one (a contract ending in 2 weeks and seats
-needed before Q1 stay two separate facts). Leave out a bullet, a section, or a part of a header
-line when the input has nothing for it, rather than writing that something is missing.
-
-If after_hours is true, end with the line "Arrived outside working hours." Do not use Markdown
-(no #, *, or bold). Do not add meetings, demos, dates, or next steps the input does not mention.
+Rules for the brief:
+- Bullets start with "• ", hold one fact, and run 15 words at most. One blank line between sections.
+- State each fact once, in the input's most specific wording: the input repeats some facts in other
+  words (a deadline in the note and a "Needs to move in 14 days" signal; the role in the header and
+  a "VP submitted the form" signal), so keep only one. Copy
+  numbers and timeframes exactly, and keep separate facts separate.
+- Leave out any bullet or section the input has nothing for.
+- Only when after_hours is true, end with the line "Arrived outside working hours."
+- Add no meetings, demos, dates, or next steps the input does not mention.
 
 The input does not state anyone's gender, so do not guess it from a name. In both fields, never
 write he, him, his, she, her, hers, himself, or herself for the buyer or a rep. Repeat the name,

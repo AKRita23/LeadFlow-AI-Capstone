@@ -164,7 +164,9 @@ The ranker sorts the shortlist by, in order:
 | 7 | Leads left today, most first |
 | 8 | `rep_id`, so ties resolve the same way every time |
 
-On the 15 workbook leads, Claude's proposals all passed the check, and its primary matched the ranker's first choice on 13. In the other two it chose a rep with more time over a closer vertical match (PropTech) or lower stage pressure (Nexus Cloud). The workbook has no expected rep per lead, so this measures consistency, not accuracy. A routing call took 3 to 7.5 seconds.
+On the 15 workbook leads, Claude's proposals all passed the check, and its primary matched the ranker's first choice on 13. In the other two it chose a rep with more time over a closer vertical match (PropTech) or lower stage pressure (Nexus Cloud). The workbook has no expected rep per lead, so this measures consistency, not accuracy.
+
+With the sectioned brief, a routing call takes about 8 seconds (median over 12 workbook leads), and the slowest calls come close to the 10-second timeout; a call that runs over falls back to the ranker. Most of the time goes to Claude's thinking, about 1,900 output tokens against about 250 for the visible reply. Turning thinking off brought the call down to about 3 seconds in testing, but made the choice between close candidates slightly weaker, so thinking stays on.
 
 ## Setup
 
@@ -190,7 +192,7 @@ The demo page is at http://127.0.0.1:8000/. Pick a sample lead (the 20 workbook 
   <img src="docs/demo-page.png" alt="The demo page after sending the FinPay lead: every stage passed, buyer score 98 High with its breakdown, Claude's routing proposal of rep_003 with backup rep_027 and the rep brief, and the capacity table of the five shortlisted reps" width="100%">
 </p>
 
-The screenshot shows the FinPay lead (`sub_8f92a1c4`) with Claude reading the note and proposing the route. The request took about 7 seconds end to end.
+The screenshot shows the FinPay lead (`sub_8f92a1c4`) with Claude reading the note and proposing the route, and the rep brief in its sectioned layout. The request took about 9 seconds end to end.
 
 Interactive API docs are at http://127.0.0.1:8000/docs. The `POST /leads` form there is pre-filled with a valid example lead.
 
