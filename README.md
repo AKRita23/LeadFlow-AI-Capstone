@@ -97,17 +97,37 @@ Run the evals with `.venv/bin/python -m leadflow.eval_buyer` (rules) or `--llm` 
 
 #### Arize Phoenix (quality traces)
 
-`leadflow/eval_buyer.py` stays the source of truth for workbook metrics. To view the same run in Arize Phoenix (tier match, score error, signal agreement on each lead span):
+The **labels used for eval** live in this repo (anyone who clones gets them):
+
+| File | What it is |
+|------|------------|
+| `data/LeadFlow AI mock dataset.xlsx` | 15 leads with expected intent score and urgency tier |
+| `data/buyer_signals_gold.json` | Hand-labelled note signals for those leads |
+
+`leadflow/eval_buyer.py` reads those files and prints metrics in the terminal. That is the source of truth.
+
+**Phoenix Datasets are different.** Arize Phoenix is a local web app (http://127.0.0.1:6006). A “Dataset” there is just a copy of the same labels, uploaded into Phoenix’s own database so the UI can show tables and run experiments. That upload is **not** stored in GitHub. Cloning the repo does **not** put rows under Phoenix → Datasets until you run the command below on your machine (or point at a shared hosted Phoenix).
+
+To upload the workbook labels into your Phoenix and attach quality annotations to a run:
 
 ```bash
 .venv/bin/pip install -r requirements-observability.txt
-.venv/bin/phoenix serve   # UI at http://127.0.0.1:6006
+.venv/bin/phoenix serve   # UI at http://127.0.0.1:6006; leave this running
 .venv/bin/python -m leadflow.eval_buyer --llm --phoenix
 ```
 
-In the Phoenix UI:
-- **Datasets → `leadflow-buyer-workbook`** — the 15 labeled leads (from the Excel workbook + `buyer_signals_gold.json`)
-- **Projects → `leadflow-buyer-eval`** — traces and quality annotations from the eval run
+What that last command does:
+
+1. Runs the buyer agent on the 15 labeled leads (same as without `--phoenix`).
+2. Creates Phoenix dataset **`leadflow-buyer-workbook`** from the Excel + gold JSON (skips create if it already exists).
+3. Sends traces and CODE annotations (tier match, score error, signal agreement) to project **`leadflow-buyer-eval`**.
+
+In the Phoenix UI after a successful run:
+
+- **Datasets → `leadflow-buyer-workbook`** — the uploaded labels (input = lead fields, output = expected score/tier/gold signals)
+- **Projects → `leadflow-buyer-eval`** — per-lead traces from that eval run
+
+Collaborators: pull the repo, start Phoenix, run `--phoenix` once. They rebuild the dataset from the same committed files; they do not need your laptop’s Phoenix DB.
 
 For live API traces during the demo, set `LEADFLOW_PHOENIX=1` (and optionally `PHOENIX_COLLECTOR_ENDPOINT` / `PHOENIX_API_KEY` for hosted Phoenix).
 
