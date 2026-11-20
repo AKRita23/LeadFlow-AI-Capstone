@@ -95,6 +95,22 @@ The score is capped at 1-100. 80 and above is High, 40 to 79 is Medium, below 40
 
 Run the evals with `.venv/bin/python -m leadflow.eval_buyer` (rules) or `--llm` (Claude, needs `ANTHROPIC_API_KEY`); add `--repeat 3` for replay consistency. With rule extraction, all 15 leads land in their expected tier, with no critical errors and a mean score error of 3 points. `data/buyer_signals_gold.json` holds hand-labelled signals for the same leads, used to check extraction accuracy. Three leads (CloudScale, PayFlow, DevStack) score exactly 80, so an extraction miss on those drops them to Medium.
 
+#### Arize Phoenix (quality traces)
+
+`leadflow/eval_buyer.py` stays the source of truth for workbook metrics. To view the same run in Arize Phoenix (tier match, score error, signal agreement on each lead span):
+
+```bash
+.venv/bin/pip install -r requirements-observability.txt
+.venv/bin/phoenix serve   # UI at http://127.0.0.1:6006
+.venv/bin/python -m leadflow.eval_buyer --llm --phoenix
+```
+
+In the Phoenix UI:
+- **Datasets → `leadflow-buyer-workbook`** — the 15 labeled leads (from the Excel workbook + `buyer_signals_gold.json`)
+- **Projects → `leadflow-buyer-eval`** — traces and quality annotations from the eval run
+
+For live API traces during the demo, set `LEADFLOW_PHOENIX=1` (and optionally `PHOENIX_COLLECTOR_ENDPOINT` / `PHOENIX_API_KEY` for hosted Phoenix).
+
 ### Langflow
 
 The same agent runs as a Langflow flow: Parse Lead, then Buyer Enrichment and Note Signals (Claude) side by side, then Buyer Score. The components in `flows/components/leadflow/` are thin wrappers around the `leadflow` package, so the API and Langflow score identically.
@@ -301,6 +317,7 @@ leadflow/extraction.py               Note signals: Claude, with a rules fallback
 leadflow/scoring.py                  Rule-based intent score and tier
 leadflow/buyer_agent.py              Buyer agent: enrich, extract, score
 leadflow/eval_buyer.py               Buyer agent evals against the workbook
+leadflow/observability.py            Optional Arize Phoenix tracing (LEADFLOW_PHOENIX / --phoenix)
 leadflow/capacity.py                 Capacity service: bandwidth, stage pressure, and fit per shortlisted rep
 leadflow/routing.py                  Routing agent: Claude proposal, shortlist check, ranker fallback
 leadflow/commit.py                   Validate and commit: live rep load, locked assignment, RevOps queue

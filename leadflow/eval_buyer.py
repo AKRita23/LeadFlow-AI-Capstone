@@ -3,18 +3,24 @@
     python -m leadflow.eval_buyer            # rules extraction, offline
     python -m leadflow.eval_buyer --llm      # Claude extraction (needs ANTHROPIC_API_KEY)
     python -m leadflow.eval_buyer --llm --repeat 3
+    python -m leadflow.eval_buyer --llm --phoenix   # also push traces + quality annotations to Phoenix
 
 Reports tier accuracy, High-tier recall and precision, critical errors
 (High scored Low or Low scored High), score error, extraction agreement with
 data/buyer_signals_gold.json, fallback rate, replay consistency, and latency.
+
+With --phoenix, each lead is a traced span and CODE annotations for tier match,
+score error, and signal agreement are logged to Arize Phoenix (local or hosted).
 """
+from __future__ import annotations
+
 import argparse
 import json
 import statistics
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional, Sequence
+from typing import Any, Dict, List, Optional, Sequence
 
 from leadflow.buyer_agent import BuyerContextAgent
 from leadflow.contracts import BuyerAssessment, NoteSignals
@@ -55,19 +61,60 @@ class Case:
     expected: LeadExpectation
     runs: List[BuyerAssessment]
     latencies_ms: List[float]
+    span_id: Optional[str] = None
 
 
-def run(agent: BuyerContextAgent, leads: Sequence[Lead], expectations: Sequence[LeadExpectation], repeat: int = 1):
+@dataclass
+class TraceRow:
+    span_id: str
+    submission_id: str
+    tier_match: bool
+    score_error: float
+    signals: Dict[str, bool] = field(default_factory=dict)
+
+
+def run(
+    agent: BuyerContextAgent,
+    leads: Sequence[Lead],
+    expectations: Sequence[LeadExpectation],
+    repeat: int = 1,
+    tracer: Any = None,
+    gold: Optional[Dict[str, NoteSignals]] = None,
+) -> List[Case]:
     cases = []
     for lead, expected in zip(leads, expectations):
         if expected.expected_urgency_tier is None:
             continue
         runs, latencies = [], []
-        for _ in range(repeat):
-            start = time.perf_counter()
-            runs.append(agent(lead))
-            latencies.append((time.perf_counter() - start) * 1000)
-        cases.append(Case(lead, expected, runs, latencies))
+        span_id = None
+        span_cm = tracer.start_as_current_span("buyer.eval") if tracer is not None else None
+        span = span_cm.__enter__() if span_cm is not None else None
+        try:
+            if span is not None:
+                span.set_attribute("lead.submission_id", lead.submission_id)
+                span.set_attribute("lead.company", lead.company)
+                span.set_attribute("eval.expected_tier", expected.expected_urgency_tier)
+                span.set_attribute("eval.expected_score", float(expected.expected_intent_score))
+                ctx = span.get_span_context()
+                span_id = format(ctx.span_id, "016x") if ctx.is_valid else None
+            for _ in range(repeat):
+                start = time.perf_counter()
+                runs.append(agent(lead))
+                latencies.append((time.perf_counter() - start) * 1000)
+            a = runs[0]
+            if span is not None:
+                span.set_attribute("eval.got_tier", a.urgency_tier)
+                span.set_attribute("eval.got_score", int(a.intent_score))
+                span.set_attribute("eval.tier_match", a.urgency_tier == expected.expected_urgency_tier)
+                span.set_attribute("eval.extraction", a.extraction)
+                span.set_attribute("eval.score_error", abs(a.intent_score - expected.expected_intent_score))
+                if gold and a.submission_id in gold:
+                    for name, ok in signal_agreement(a.signals, gold[a.submission_id]).items():
+                        span.set_attribute(f"eval.signal_{name}", ok)
+        finally:
+            if span_cm is not None:
+                span_cm.__exit__(None, None, None)
+        cases.append(Case(lead, expected, runs, latencies, span_id))
     return cases
 
 
@@ -95,8 +142,8 @@ def summarize(cases: Sequence[Case], gold: Optional[Dict[str, NoteSignals]] = No
     }
     if gold:
         checks = [signal_agreement(a.signals, gold[a.submission_id]) for a in first if a.submission_id in gold]
-        for field in SIGNAL_FIELDS:
-            metrics[f"signal_{field}"] = sum(check[field] for check in checks) / len(checks)
+        for field_name in SIGNAL_FIELDS:
+            metrics[f"signal_{field_name}"] = sum(check[field_name] for check in checks) / len(checks)
     return metrics
 
 
@@ -108,15 +155,183 @@ def default_agent(use_llm: bool) -> BuyerContextAgent:
     return BuyerContextAgent(MockTheirStack(rows), MockPostHog(rows), extractor)
 
 
+def _trace_rows(cases: Sequence[Case], gold: Optional[Dict[str, NoteSignals]]) -> List[TraceRow]:
+    rows = []
+    for c in cases:
+        if not c.span_id:
+            continue
+        a = c.runs[0]
+        signals = signal_agreement(a.signals, gold[a.submission_id]) if gold and a.submission_id in gold else {}
+        rows.append(
+            TraceRow(
+                span_id=c.span_id,
+                submission_id=a.submission_id,
+                tier_match=a.urgency_tier == c.expected.expected_urgency_tier,
+                score_error=abs(a.intent_score - c.expected.expected_intent_score),
+                signals=signals,
+            )
+        )
+    return rows
+
+
+def upload_phoenix_dataset(
+    leads: Sequence[Lead],
+    expectations: Sequence[LeadExpectation],
+    gold: Dict[str, NoteSignals],
+    name: str = "leadflow-buyer-workbook",
+) -> None:
+    """Publish the workbook gold set under Phoenix → Datasets (not Projects)."""
+    try:
+        import pandas as pd
+        from phoenix.client import Client
+    except ImportError as exc:
+        raise SystemExit(
+            "Phoenix client missing. Install with:\n"
+            "  .venv/bin/pip install -r requirements-observability.txt"
+        ) from exc
+
+    rows = []
+    for lead, expected in zip(leads, expectations):
+        if expected.expected_urgency_tier is None:
+            continue
+        g = gold.get(lead.submission_id)
+        rows.append(
+            {
+                "submission_id": lead.submission_id,
+                "company": lead.company,
+                "work_email": lead.work_email,
+                "role": lead.role,
+                "inquiry_reason": lead.inquiry_reason,
+                "free_text_note": lead.free_text_note or "",
+                "expected_intent_score": float(expected.expected_intent_score),
+                "expected_urgency_tier": expected.expected_urgency_tier,
+                "gold_deadline_days": None if g is None else g.deadline_days,
+                "gold_seats": None if g is None else g.seats,
+                "gold_competitor": None if g is None else g.competitor_mentioned,
+                "gold_compliance": "" if g is None else ",".join(g.compliance or []),
+                "gold_buying_stage": None if g is None else g.buying_stage,
+                "gold_summary": None if g is None else g.summary,
+            }
+        )
+    client = Client()
+    existing = [d for d in client.datasets.list() if d.get("name") == name]
+    if existing:
+        print(f"Phoenix dataset already present: {name} ({existing[0].get('example_count')} examples)")
+        return
+    dataset = client.datasets.create_dataset(
+        name=name,
+        dataset_description=(
+            "15 workbook leads with expected intent score/tier "
+            "(data/LeadFlow AI mock dataset.xlsx) and gold note signals "
+            "(data/buyer_signals_gold.json)."
+        ),
+        dataframe=pd.DataFrame(rows),
+        input_keys=["submission_id", "company", "work_email", "role", "inquiry_reason", "free_text_note"],
+        output_keys=[
+            "expected_intent_score",
+            "expected_urgency_tier",
+            "gold_deadline_days",
+            "gold_seats",
+            "gold_competitor",
+            "gold_compliance",
+            "gold_buying_stage",
+            "gold_summary",
+        ],
+    )
+    n = getattr(dataset, "example_count", None) or len(rows)
+    print(f"Phoenix dataset created: {name} ({n} examples) — open Datasets in the UI")
+
+
+def push_phoenix_annotations(rows: Sequence[TraceRow]) -> None:
+    """Log CODE annotations onto the eval spans in Phoenix."""
+    if not rows:
+        print("Phoenix: no span ids to annotate (is the collector reachable?)")
+        return
+    try:
+        import pandas as pd
+        from phoenix.client import Client
+    except ImportError as exc:
+        raise SystemExit(
+            "Phoenix client missing. Install with:\n"
+            "  .venv/bin/pip install -r requirements-observability.txt"
+        ) from exc
+
+    client = Client()
+    # Flush can lag; give the collector a moment before attaching annotations.
+    time.sleep(2.0)
+
+    tier_df = pd.DataFrame(
+        [
+            {
+                "span_id": r.span_id,
+                "label": "match" if r.tier_match else "miss",
+                "score": 1.0 if r.tier_match else 0.0,
+                "explanation": r.submission_id,
+            }
+            for r in rows
+        ]
+    )
+    client.spans.log_span_annotations_dataframe(
+        dataframe=tier_df, annotation_name="tier_match", annotator_kind="CODE"
+    )
+
+    score_df = pd.DataFrame(
+        [
+            {
+                "span_id": r.span_id,
+                "score": float(r.score_error),
+                "label": "mae",
+                "explanation": r.submission_id,
+            }
+            for r in rows
+        ]
+    )
+    client.spans.log_span_annotations_dataframe(
+        dataframe=score_df, annotation_name="score_error", annotator_kind="CODE"
+    )
+
+    for field_name in SIGNAL_FIELDS:
+        signal_rows = [r for r in rows if field_name in r.signals]
+        if not signal_rows:
+            continue
+        df = pd.DataFrame(
+            [
+                {
+                    "span_id": r.span_id,
+                    "label": "match" if r.signals[field_name] else "miss",
+                    "score": 1.0 if r.signals[field_name] else 0.0,
+                    "explanation": r.submission_id,
+                }
+                for r in signal_rows
+            ]
+        )
+        client.spans.log_span_annotations_dataframe(
+            dataframe=df, annotation_name=f"signal_{field_name}", annotator_kind="CODE"
+        )
+    print(f"Phoenix: logged annotations for {len(rows)} leads (tier_match, score_error, signals)")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--llm", action="store_true", help="extract signals with Claude instead of rules")
     parser.add_argument("--repeat", type=int, default=1, help="runs per lead, for replay consistency")
+    parser.add_argument(
+        "--phoenix",
+        action="store_true",
+        help="trace each lead and push quality annotations to Arize Phoenix",
+    )
     args = parser.parse_args()
 
+    tracer = None
+    if args.phoenix:
+        from leadflow.observability import get_tracer, setup_phoenix
+
+        setup_phoenix(project_name="leadflow-buyer-eval", force=True)
+        tracer = get_tracer("leadflow.eval_buyer")
+
     leads, expectations = load_leads()
-    cases = run(default_agent(args.llm), leads, expectations, args.repeat)
     gold = load_gold()
+    cases = run(default_agent(args.llm), leads, expectations, args.repeat, tracer=tracer, gold=gold)
 
     print(f"{'lead':14} {'company':24} {'score':>5} {'exp':>4} {'tier':7} {'exp':7} via")
     for c in cases:
@@ -128,8 +343,16 @@ def main() -> None:
             f"{a.extraction}{mark}"
         )
     print()
-    for name, value in summarize(cases, gold).items():
+    metrics = summarize(cases, gold)
+    for name, value in metrics.items():
         print(f"{name:20} {value:.3f}" if isinstance(value, float) else f"{name:20} {value}")
+
+    if args.phoenix:
+        upload_phoenix_dataset(leads, expectations, gold)
+        push_phoenix_annotations(_trace_rows(cases, gold))
+        print("Phoenix UI: http://127.0.0.1:6006")
+        print("  Datasets → leadflow-buyer-workbook  (gold labels)")
+        print("  Projects → leadflow-buyer-eval      (run traces + annotations)")
 
 
 if __name__ == "__main__":

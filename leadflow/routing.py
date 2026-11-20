@@ -41,7 +41,7 @@ from leadflow.models import EligibleReps, Lead
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_MODEL = "claude-haiku-5-5"
+DEFAULT_MODEL = "claude-haiku-4-5"
 
 LEVEL_ORDER = {"High": 0, "Medium": 1, "Low": 2}
 
@@ -108,9 +108,9 @@ class _ProposalDraft(BaseModel):
 class ClaudeRouter:
     def __init__(self, client: Any = None, model: Optional[str] = None, timeout: float = 10.0):
         if client is None:
-            import anthropic
+            from leadflow.observability import anthropic_client
 
-            client = anthropic.Anthropic(timeout=timeout, max_retries=1)
+            client = anthropic_client(timeout=timeout)
         self.client = client
         self.model = model or os.environ.get("LEADFLOW_ROUTING_MODEL") or DEFAULT_MODEL
 

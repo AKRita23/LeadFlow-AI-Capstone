@@ -44,9 +44,9 @@ def _user_message(lead: Lead) -> str:
 class ClaudeExtractor:
     def __init__(self, client: Any = None, model: Optional[str] = None, timeout: float = 15.0):
         if client is None:
-            import anthropic
+            from leadflow.observability import anthropic_client
 
-            client = anthropic.Anthropic(timeout=timeout, max_retries=1)
+            client = anthropic_client(timeout=timeout)
         self.client = client
         self.model = model or os.environ.get("LEADFLOW_BUYER_MODEL") or DEFAULT_MODEL
 
