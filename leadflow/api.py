@@ -8,13 +8,14 @@ Inbound Form schema is rejected with HTTP 422 and a per-field error list.
 A valid submission is triaged by the deterministic stages and recorded in
 SQLite. The response carries the triage outcome as status. New prospects
 also get a buyer assessment (Claude extracts the note signals when
-ANTHROPIC_API_KEY is set, rules do otherwise), a capacity matrix for the
-shortlisted reps, and a routing proposal (Claude when a key is set, with the
+ANTHROPIC_API_KEY is set, rules do otherwise) and a capacity matrix for the
+shortlisted reps, computed in parallel, then a routing proposal (Claude when a key is set, with the
 deterministic ranker as the fallback). The commit step then assigns the first
 free candidate under the live daily cap, or queues the lead for RevOps.
 Rep load is the workbook baseline plus committed assignments, so each
 assignment affects how the next lead is filtered and scored.
 """
+from concurrent.futures import ThreadPoolExecutor
 from functools import lru_cache
 from pathlib import Path
 from typing import Optional, Sequence, Tuple
@@ -37,6 +38,10 @@ from leadflow.routing import RoutingAgent, router_from_env
 from leadflow.store import DecisionStore
 
 app = FastAPI(title="LeadFlow AI", version="0.2.0")
+
+# Runs the buyer agent and the capacity service side by side for each new prospect.
+# Neither writes shared state, so they are safe to run at the same time.
+FAN_OUT = ThreadPoolExecutor(max_workers=8, thread_name_prefix="leadflow-fanout")
 
 DEMO_PAGE = Path(__file__).resolve().parent / "static" / "index.html"
 
@@ -125,8 +130,9 @@ def submit_lead(
     buyer = capacity = routing = assignment = None
     assigned_rep_id = result.assigned_rep_id
     if result.outcome == "new_prospect":
-        buyer = buyer_agent(lead)
-        capacity = capacity_service(result.shortlist, reps, lead.email_domain)
+        buyer_job = FAN_OUT.submit(buyer_agent, lead)
+        capacity_job = FAN_OUT.submit(capacity_service, result.shortlist, reps, lead.email_domain)
+        buyer, capacity = buyer_job.result(), capacity_job.result()
         routing = routing_agent(lead, buyer, capacity, result.shortlist, result.related_rep_id)
         assignment = commit_assignment(lead, buyer, routing, result.shortlist, roster, store)
         assigned_rep_id = assignment.rep_id

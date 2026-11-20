@@ -239,3 +239,45 @@ def test_demo_reset_clears_assignments(store):
 
 def test_other_outcomes_are_not_committed():
     assert post(company_size="1-15").json()["assignment"] is None
+
+
+def test_buyer_agent_and_capacity_service_run_in_parallel():
+    import threading
+    import time
+
+    from leadflow.api import get_capacity_service
+    from leadflow.capacity import CapacityService
+    from leadflow.data_loader import load_accounts
+
+    real_capacity = CapacityService(load_accounts())
+    started = threading.Barrier(2, timeout=2)
+
+    def slow_buyer(lead):
+        started.wait()  # only returns once the capacity call has started too
+        time.sleep(0.3)
+        return RULES_AGENT(lead)
+
+    def slow_capacity(shortlist, reps, domain):
+        started.wait()
+        time.sleep(0.3)
+        return real_capacity(shortlist, reps, domain)
+
+    app.dependency_overrides[get_buyer_agent] = lambda: slow_buyer
+    app.dependency_overrides[get_capacity_service] = lambda: slow_capacity
+    start = time.perf_counter()
+    body = post().json()
+    elapsed = time.perf_counter() - start
+    assert body["buyer"]["urgency_tier"] == "High"
+    assert len(body["capacity"]["reps"]) == 5
+    assert elapsed < 0.55, f"took {elapsed:.2f}s; sequential would be at least 0.6s"
+
+
+def test_a_failing_capacity_service_still_fails_the_request():
+    from leadflow.api import get_capacity_service
+
+    def broken(shortlist, reps, domain):
+        raise ValueError("capacity down")
+
+    app.dependency_overrides[get_capacity_service] = lambda: broken
+    with pytest.raises(ValueError, match="capacity down"):
+        post()
