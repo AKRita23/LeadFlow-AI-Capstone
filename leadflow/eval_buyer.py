@@ -370,16 +370,23 @@ def main() -> None:
         from leadflow.phoenix_experiments import buyer_evaluators, buyer_experiment_task, run_experiment
 
         leads_by_id = {lead.submission_id: lead for lead in leads}
+        model_name = "rules"
+        if args.llm:
+            import os
+
+            from leadflow.extraction import DEFAULT_MODEL
+
+            model_name = os.environ.get("LEADFLOW_BUYER_MODEL") or DEFAULT_MODEL
         run_experiment(
             dataset_name="leadflow-buyer-workbook",
             task=buyer_experiment_task(default_agent(args.llm), leads_by_id),
             evaluators=buyer_evaluators(),
-            experiment_name="buyer-rules" if not args.llm else "buyer-llm",
+            experiment_name="buyer-rules" if not args.llm else f"buyer-{model_name}",
             experiment_description=(
                 "Buyer agent on workbook leads: tier/score vs Excel expectations and "
                 "note facts vs hand labels."
             ),
-            experiment_metadata={"extraction": "llm" if args.llm else "rules"},
+            experiment_metadata={"extraction": "rules" if not args.llm else "llm", "model": model_name},
             timeout=300 if args.llm else 120,
         )
         print("Phoenix UI: http://127.0.0.1:6006")
