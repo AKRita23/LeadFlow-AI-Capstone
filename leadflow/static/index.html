@@ -335,7 +335,10 @@ function handoffCard(t) {
       })),
     history.length > 0 && el("ul", { class: "muted" }, history),
     el("h2", {}, "Messages sent"),
-    t.messages.length ? t.messages.map((m, i) => messageItem(m, i === t.messages.length - 1)) : el("p", { class: "muted" }, "None"));
+    // The assignment message repeats the brief shown in the routing card, so it starts collapsed.
+    t.messages.length
+      ? t.messages.map((m, i) => messageItem(m, i === t.messages.length - 1 && m.kind !== "assignment"))
+      : el("p", { class: "muted" }, "None"));
 }
 
 async function setStatus(submissionId, status) {

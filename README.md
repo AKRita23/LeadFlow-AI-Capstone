@@ -224,10 +224,10 @@ cp .env.example .env   # then add your ANTHROPIC_API_KEY
 The demo page is at http://127.0.0.1:8000/. Pick a sample lead (the 20 workbook submissions, plus scenarios for an existing customer, two account owners, a closed-lost account, a competitor's address, an unmapped country, and a duplicate), edit it if you like, and send it. The page shows which stage decided the lead, the buyer score and the points behind it, the capacity of each shortlisted rep, and the routing proposal with its rationale and brief. A link such as `http://127.0.0.1:8000/#send=sub_8f92a1c4` picks that sample and sends it straight away, which is handy for a presentation.
 
 <p align="center">
-  <img src="docs/demo-page.png" alt="The demo page after sending the FinPay lead: every stage passed, buyer score 98 High with its breakdown, Claude's routing proposal of rep_003 with backup rep_027 and the rep brief, and the capacity table of the five shortlisted reps" width="100%">
+  <img src="docs/demo-page.png" alt="The demo page after sending the FinPay lead: every stage passed, the lead committed to rep_003 with backup rep_027, its handoff message and New status with Mark Working and Mark Disqualified buttons, buyer score 98 High with its breakdown, Claude's routing rationale and rep brief, and the capacity table of the five shortlisted reps" width="100%">
 </p>
 
-The screenshot shows the FinPay lead (`sub_8f92a1c4`) with Claude reading the note and proposing the route, and the rep brief in its sectioned layout. The request took about 9 seconds end to end.
+The screenshot shows the FinPay lead (`sub_8f92a1c4`) with Claude reading the note and proposing the route. The lead is committed to rep_003, the brief is sent to the outbox, and its status is New until the rep marks it Working. The request took about 10 seconds end to end.
 
 Interactive API docs are at http://127.0.0.1:8000/docs. The `POST /leads` form there is pre-filled with a valid example lead.
 
