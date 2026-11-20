@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Evals — LeadFlowAI</title>
+<style>
+  @page { size: 13.333in 7.5in; margin: 0; }
+  * { box-sizing: border-box; }
+  :root {
+    --navy: #0b2c5e;
+    --blue: #1a4f8b;
+    --accent: #2f6fed;
+    --card: #d9ebf7;
+    --card-border: #b7d4ea;
+    --text: #0b2c5e;
+    --muted: #4a6a8a;
+    --line: #c5d9ea;
+    --bg: #ffffff;
+    --pass: #1f7a3f;
+    --fail: #c0392b;
+    --na: #6a829c;
+  }
+  body {
+    margin: 0; min-height: 100vh; display: grid; place-items: center;
+    background: #e8eef3;
+    font-family: "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    color: var(--text);
+  }
+  .slide {
+    width: 1280px; height: 720px; background: var(--bg);
+    padding: 40px 52px 36px; display: flex; flex-direction: column; gap: 18px;
+  }
+  .eyebrow {
+    margin: 0; font-size: 13px; font-weight: 700; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--accent);
+  }
+  h1 {
+    margin: 4px 0 0; font-size: 40px; font-weight: 800; letter-spacing: -0.02em;
+    color: var(--navy);
+  }
+  .sub { margin: 6px 0 0; font-size: 16px; color: var(--muted); max-width: 980px; }
+  .card {
+    background: var(--card); border-radius: 18px; padding: 18px 20px;
+    flex: 1; min-height: 0; display: flex; flex-direction: column;
+  }
+  .card h2 {
+    margin: 0 0 12px; font-size: 15px; font-weight: 800; color: var(--accent);
+    text-transform: uppercase; letter-spacing: .04em;
+  }
+  table {
+    width: 100%; border-collapse: collapse; font-size: 14px; background: #fff;
+    border-radius: 12px; overflow: hidden; flex: 1;
+  }
+  th, td { padding: 9px 14px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  th {
+    font-size: 11px; text-transform: uppercase; letter-spacing: .05em;
+    color: var(--muted); font-weight: 700; background: #f3f8fc; text-align: left;
+  }
+  th:nth-child(2), th:nth-child(3), th:nth-child(4),
+  td:nth-child(2), td:nth-child(3), td:nth-child(4) { text-align: center; }
+  td:nth-child(1) { font-weight: 650; color: var(--navy); }
+  td:nth-child(2), td:nth-child(3) { color: var(--muted); }
+  tr:last-child td { border-bottom: 0; }
+  tr.section td { border-top: 2px solid var(--card-border); }
+  .mark {
+    display: inline-block; min-width: 1.4em; font-weight: 800; font-size: 15px;
+  }
+  .mark.pass { color: var(--pass); }
+  .mark.fail { color: var(--fail); }
+  .mark.na { color: var(--na); font-size: 13px; font-weight: 700; }
+  .detail { color: var(--muted); font-size: 12.5px; font-weight: 600; margin-left: 4px; }
+  .footer {
+    background: var(--navy); color: #e8f1fa; border-radius: 14px;
+    padding: 14px 18px; font-size: 15px; line-height: 1.4;
+  }
+  .footer strong { color: #fff; }
+</style>
+</head>
+<body>
+  <div class="slide">
+    <header>
+      <p class="eyebrow">Quality · Arize Phoenix</p>
+      <h1>Evals</h1>
+      <p class="sub">Scorecard on 15 workbook leads. Buyer has hand labels; routing and capacity do not — N/A means no labeled answer key, not a free pass.</p>
+    </header>
+
+    <div class="card">
+      <h2>Evaluation scorecard</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Method</th>
+            <th>Target</th>
+            <th>Achieved?</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Buyer Tier Accuracy</td>
+            <td>Exact Match</td>
+            <td>&gt; 90%</td>
+            <td><span class="mark pass">✓</span></td>
+          </tr>
+          <tr>
+            <td>Buyer Score Error (MAE)</td>
+            <td>vs Excel labels</td>
+            <td>&lt; 5 pts</td>
+            <td><span class="mark pass">✓</span><span class="detail">~3 pts</span></td>
+          </tr>
+          <tr>
+            <td>Note Fact Extraction</td>
+            <td>Manual Label</td>
+            <td>&gt; 90%</td>
+            <td><span class="mark pass">✓</span></td>
+          </tr>
+          <tr>
+            <td>Critical High↔Low Errors</td>
+            <td>Exact Match</td>
+            <td>0</td>
+            <td><span class="mark pass">✓</span></td>
+          </tr>
+          <tr class="section">
+            <td>Routing Proposal Valid</td>
+            <td>Shortlist check</td>
+            <td>100%</td>
+            <td><span class="mark pass">✓</span></td>
+          </tr>
+          <tr>
+            <td>Claude ↔ Ranker Consistency</td>
+            <td>Primary match</td>
+            <td>&gt; 80%</td>
+            <td><span class="mark pass">✓</span><span class="detail">13/15</span></td>
+          </tr>
+          <tr>
+            <td>Correct Rep Accuracy</td>
+            <td>Labeled answer key</td>
+            <td>—</td>
+            <td><span class="mark na">N/A</span></td>
+          </tr>
+          <tr class="section">
+            <td>Capacity Shortlist Coverage</td>
+            <td>Contract check</td>
+            <td>100%</td>
+            <td><span class="mark pass">✓</span></td>
+          </tr>
+          <tr>
+            <td>Bandwidth Tier Accuracy</td>
+            <td>Labeled answer key</td>
+            <td>—</td>
+            <td><span class="mark na">N/A</span></td>
+          </tr>
+          <tr>
+            <td>Holdout / Live Production Eval</td>
+            <td>Unseen leads</td>
+            <td>In progress</td>
+            <td><span class="mark fail">✕</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="footer">
+      <strong>Talk track:</strong> Lead with buyer MAE ~3 and Claude routing 13/15.
+      Don’t claim 100% everywhere — capacity/ranker checks can pass while labeled accuracy is still N/A.
+    </div>
+  </div>
+</body>
+</html>

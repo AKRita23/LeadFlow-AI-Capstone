@@ -350,8 +350,23 @@ def main() -> None:
     if args.phoenix:
         upload_phoenix_dataset(leads, expectations, gold)
         push_phoenix_annotations(_trace_rows(cases, gold))
+        from leadflow.phoenix_experiments import buyer_evaluators, buyer_experiment_task, run_experiment
+
+        leads_by_id = {lead.submission_id: lead for lead in leads}
+        run_experiment(
+            dataset_name="leadflow-buyer-workbook",
+            task=buyer_experiment_task(default_agent(args.llm), leads_by_id),
+            evaluators=buyer_evaluators(),
+            experiment_name="buyer-rules" if not args.llm else "buyer-llm",
+            experiment_description=(
+                "Buyer agent on workbook leads: tier/score vs Excel expectations and "
+                "note facts vs hand labels."
+            ),
+            experiment_metadata={"extraction": "llm" if args.llm else "rules"},
+            timeout=300 if args.llm else 120,
+        )
         print("Phoenix UI: http://127.0.0.1:6006")
-        print("  Datasets → leadflow-buyer-workbook  (gold labels)")
+        print("  Datasets → leadflow-buyer-workbook → Experiments")
         print("  Projects → leadflow-buyer-eval      (run traces + annotations)")
 
 

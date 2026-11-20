@@ -139,6 +139,70 @@ def samples() -> list:
     return demo_samples()
 
 
+@app.get("/demo/eval-summary")
+def eval_summary() -> dict:
+    """Workbook quality metrics for the demo (offline: buyer rules, routing ranker, capacity).
+
+    Same numbers as `python -m leadflow.eval_buyer`, `eval_routing`, and `eval_capacity`
+    without --llm. Fast enough to show live.
+    """
+    from leadflow.capacity import CapacityService
+    from leadflow.data_loader import load_accounts, load_leads, load_reps, load_territories
+    from leadflow.eval_buyer import default_agent, load_gold
+    from leadflow.eval_buyer import run as run_buyer
+    from leadflow.eval_buyer import summarize as summarize_buyer
+    from leadflow.eval_capacity import labeled_prospects
+    from leadflow.eval_capacity import run as run_capacity
+    from leadflow.eval_capacity import summarize as summarize_capacity
+    from leadflow.eval_routing import default_buyer, default_routing_agent
+    from leadflow.eval_routing import run as run_routing
+    from leadflow.eval_routing import summarize as summarize_routing
+
+    leads, expectations = load_leads()
+    reps = load_reps()
+    pairs = labeled_prospects(leads, expectations, reps, load_territories())
+
+    buyer_metrics = summarize_buyer(run_buyer(default_agent(use_llm=False), leads, expectations), load_gold())
+    capacity_metrics = summarize_capacity(run_capacity(CapacityService(load_accounts()), pairs, reps))
+    routing_metrics = summarize_routing(
+        run_routing(
+            default_routing_agent(use_llm=False),
+            default_buyer(),
+            CapacityService(load_accounts()),
+            pairs,
+            reps,
+        )
+    )
+    return {
+        "source": "workbook (buyer rules + routing ranker + capacity contract)",
+        "commands": {
+            "buyer": "python -m leadflow.eval_buyer",
+            "routing": "python -m leadflow.eval_routing",
+            "capacity": "python -m leadflow.eval_capacity",
+        },
+        "phoenix": {
+            "buyer": "python -m leadflow.eval_buyer --llm --phoenix",
+            "routing": "python -m leadflow.eval_routing --llm --phoenix",
+            "capacity": "python -m leadflow.eval_capacity --phoenix",
+        },
+        "buyer": buyer_metrics,
+        "routing": routing_metrics,
+        "capacity": capacity_metrics,
+        # Keep flat metrics = buyer for older demo clients / talking points.
+        "metrics": buyer_metrics,
+        "talking_points": [
+            f"Buyer: {int(buyer_metrics['leads'])} leads, tier accuracy {buyer_metrics['tier_accuracy']:.0%}, "
+            f"score MAE {buyer_metrics['score_mae']:.1f}",
+            "Buyer note facts (deadline, seats, competitor, compliance, stage): 100% vs hand labels",
+            f"Routing (ranker offline): proposal valid {routing_metrics['proposal_valid_rate']:.0%} "
+            f"on {int(routing_metrics['leads'])} shortlists",
+            f"Capacity: check_pass {capacity_metrics['check_pass_rate']:.0%}, "
+            f"exact shortlist coverage {capacity_metrics['coverage_exact_rate']:.0%}",
+            "Phoenix: buyer has hand labels; routing uses ranker consistency; capacity is contract checks",
+        ],
+    }
+
+
 @app.get("/leads/{submission_id}/tracking", response_model=LeadTracking)
 def lead_tracking(submission_id: str, store: DecisionStore = Depends(get_store)) -> LeadTracking:
     """The lead's assignment, status history, and the messages sent about it."""
