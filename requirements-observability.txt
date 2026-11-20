@@ -7,6 +7,9 @@
 arize-phoenix>=11.0.0,<13
 arize-phoenix-otel>=0.10.0
 arize-phoenix-client>=1.0.0
-openinference-instrumentation-anthropic>=0.1.0
+# Phoenix 12.x imports phoenix.evals.models, removed in arize-phoenix-evals 3.
+arize-phoenix-evals>=2.8.0,<3
+# 2.x and later need anthropic>=1.0 and silently trace nothing with the anthropic 0.x we pin.
+openinference-instrumentation-anthropic>=1.0,<2
 opentelemetry-sdk>=1.28.0
 graphql-core>=3.2.0,<3.2.14

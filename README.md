@@ -132,12 +132,51 @@ The **labels / baselines used for eval** live in this repo (anyone who clones ge
 | `eval_buyer [--llm] --phoenix` | `leadflow-buyer-workbook` | `buyer-rules` / `buyer-llm` | `leadflow-buyer-eval` |
 | `eval_routing [--llm] --phoenix` | `leadflow-routing-workbook` | `routing-ranker` / `routing-llm` | `leadflow-routing-eval` |
 | `eval_capacity --phoenix` | `leadflow-capacity-workbook` | `capacity-contract` | `leadflow-capacity-eval` |
+| `eval_components [--phoenix]` | `leadflow-buyer-workbook` | component experiment | (scores recorded on the dataset) |
 
 Each `--phoenix` run creates/reuses the dataset, logs span annotations, and calls Phoenix `experiments.run_experiment` so results appear under **Datasets → (dataset) → Experiments** (not only under Projects).
 
 Collaborators: pull the repo, start Phoenix, run the `--phoenix` commands once. They rebuild datasets from the same committed files; they do not need your laptop’s Phoenix DB.
 
-For live API traces during the demo, set `LEADFLOW_PHOENIX=1` (and optionally `PHOENIX_COLLECTOR_ENDPOINT` / `PHOENIX_API_KEY` for hosted Phoenix).
+For live API traces during the demo, set `LEADFLOW_PHOENIX=1` (and optionally `PHOENIX_COLLECTOR_ENDPOINT` / `PHOENIX_API_KEY` for hosted Phoenix). Each lead sent to `POST /leads` then shows up in **Projects → `leadflow-api`** as one trace:
+
+```
+lead                      the submitted lead in, status and assigned rep out
+├── triage                outcome and reason
+├── buyer_agent           BuyerAssessment
+│   └── messages.create   Claude note extraction: prompt, tool call, tokens, latency
+├── capacity_service      CapacityMatrix
+├── routing_agent         RoutingOutcome
+│   └── messages.create   Claude routing proposal and brief
+└── commit                Assignment
+```
+
+A failed stage shows as an error span, so a routing timeout that fell back to the ranker is easy to find, and the tree shows where a lead's time goes (routing takes most of it).
+
+#### Component evals
+
+`leadflow/eval_components.py` scores the two Claude calls on the same 15 leads, running the real pipeline up to the routing proposal (nothing is committed):
+
+| Component | Evaluator | Type | What it checks |
+|---|---|---|---|
+| Note extraction | `field_accuracy` | Code | Deadline, seats, competitor, compliance, and buying stage equal the hand labels exactly (stricter than `eval_buyer`, which compares at the scorer's granularity) |
+| Note extraction | `summary_faithfulness` | LLM judge | Every fact in the summary is in the inquiry reason or the note, with no two facts merged |
+| Note extraction | `tier_accuracy` | Code | The scored tier equals the workbook's expected tier |
+| Rep choice | `rule_compliance` | Code | No High-urgency lead on a Low-bandwidth rep when another fits, no available related rep skipped, a distinct backup |
+| Rep choice | `counterfactual_sensitivity` | Code | Once the chosen rep is made unable to take the lead, Claude picks someone else (one extra routing call) |
+| Rep brief | `brief_completeness` | Code | Every extracted signal is in the brief, numbers and timeframes copied exactly |
+| Rep brief | `brief_format` | Code | Plain text, under 120 words, bullets of 15 words at most, no gendered pronouns, after-hours line when due |
+| Rep brief | `brief_faithfulness` | LLM judge | Every claim is in the routing input, with no invented fact, meeting, or next step |
+
+The judge is Claude Opus 5.5 (`LEADFLOW_JUDGE_MODEL` to change it) and returns the unsupported claims it found. It has not been calibrated against hand labels yet. Checks that do not apply, such as rule compliance when the ranker made the proposal, are left unscored.
+
+```bash
+.venv/bin/python -m leadflow.eval_components             # prints failures and averages
+.venv/bin/python -m leadflow.eval_components --phoenix   # also records the run as a Phoenix experiment
+.venv/bin/python -m leadflow.eval_components --limit 2 --no-judge   # quick check
+```
+
+With `--phoenix`, the run becomes an experiment on the `leadflow-buyer-workbook` dataset (created if missing), with a score, label, and explanation per lead and evaluator, so runs can be compared after a prompt or model change. Scores are computed locally in parallel and then recorded, so a full run takes a few minutes.
 
 ### Langflow
 
@@ -350,7 +389,9 @@ leadflow/buyer_agent.py              Buyer agent: enrich, extract, score
 leadflow/eval_buyer.py               Buyer agent evals against the workbook
 leadflow/eval_routing.py             Routing evals: proposal validity + Claude↔ranker consistency
 leadflow/eval_capacity.py            Capacity evals: check_capacity + shortlist coverage
-leadflow/observability.py            Optional Arize Phoenix tracing (LEADFLOW_PHOENIX / --phoenix)
+leadflow/eval_components.py          Component evals of the Claude calls (extraction, routing, brief), optional Phoenix experiment
+leadflow/phoenix_experiments.py      Shared Phoenix experiment helpers for eval_* --phoenix runs
+leadflow/observability.py            Optional Arize Phoenix tracing (LEADFLOW_PHOENIX / --phoenix), one trace per lead
 leadflow/capacity.py                 Capacity service: bandwidth, stage pressure, and fit per shortlisted rep
 leadflow/routing.py                  Routing agent: Claude proposal, shortlist check, ranker fallback
 leadflow/commit.py                   Validate and commit: live rep load, locked assignment, RevOps queue
@@ -376,6 +417,8 @@ tests/test_commit.py                 Assignment order, daily cap, idempotency, c
 tests/test_handoff.py                Handoff messages, status moves, watchdog reassignment and escalation
 tests/test_demo.py                   Demo page, samples, and scenario paths
 tests/test_api.py                    Endpoint and validation rules
+tests/test_observability.py          Trace per lead with a span per stage, no-op when tracing is off
+tests/test_eval_components.py        Component evaluators and judge parsing, offline
 flows/buyer_agent_flow.py            Buyer agent as a Langflow graph; exports flows/buyer_agent.json
 flows/components/leadflow/           Langflow components wrapping the buyer agent steps
 ```
