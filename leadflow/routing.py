@@ -41,7 +41,7 @@ from leadflow.models import EligibleReps, Lead
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_MODEL = "claude-haiku-4-5"
+DEFAULT_MODEL = "claude-haiku-5-5"
 
 LEVEL_ORDER = {"High": 0, "Medium": 1, "Low": 2}
 

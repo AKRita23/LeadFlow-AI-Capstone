@@ -19,9 +19,10 @@ outbox, the rep moves the lead's status on, and the SLA watchdog reassigns
 High-urgency leads still at New after 10 minutes.
 """
 from concurrent.futures import ThreadPoolExecutor
+from contextvars import copy_context
 from functools import lru_cache
 from pathlib import Path
-from typing import Optional, Sequence, Tuple
+from typing import Any, Callable, Optional, Sequence, Tuple
 
 from datetime import timedelta
 
@@ -63,7 +64,7 @@ from leadflow.store import DecisionStore
 app = FastAPI(title="LeadFlow AI", version="0.2.0")
 
 # Optional Arize Phoenix tracing (LEADFLOW_PHOENIX=1). No-op when unset.
-from leadflow.observability import setup_phoenix  # noqa: E402
+from leadflow.observability import set_output, setup_phoenix, span  # noqa: E402
 
 setup_phoenix(project_name="leadflow-api")
 
@@ -255,21 +256,47 @@ def submit_lead(
     Every schema-valid submission returns 202, whatever the outcome.
     """
     accounts, roster, territories = reference
-    reps = live_reps(roster, store, lead.submitted_at, exclude_submission_id=lead.submission_id)
-    result = triage(lead, accounts, reps, territories, store)
-    buyer = capacity = routing = assignment = None
-    assigned_rep_id = result.assigned_rep_id
-    if result.outcome == "new_prospect":
-        buyer_job = FAN_OUT.submit(buyer_agent, lead)
-        capacity_job = FAN_OUT.submit(capacity_service, result.shortlist, reps, lead.email_domain)
-        buyer, capacity = buyer_job.result(), capacity_job.result()
-        routing = routing_agent(lead, buyer, capacity, result.shortlist, result.related_rep_id)
-        assignment = commit_assignment(lead, buyer, routing, result.shortlist, roster, store)
-        assigned_rep_id = assignment.rep_id
-        send_assignment(store, lead, buyer, routing, assignment)
-    elif result.ownership is not None:
-        send_owner_handoff(store, result.ownership)
-    lead_tracking_info = tracking(store, lead.submission_id) if (assignment or result.ownership) else None
+    # With LEADFLOW_PHOENIX=1 each lead is one trace: a span per stage, with the Claude calls inside.
+    with span("lead", input=lead, **{"lead.submission_id": lead.submission_id, "lead.company": lead.company}) as lead_span:
+        reps = live_reps(roster, store, lead.submitted_at, exclude_submission_id=lead.submission_id)
+        with span("triage") as triage_span:
+            result = triage(lead, accounts, reps, territories, store)
+            set_output(triage_span, {"outcome": result.outcome, "reason": result.reason})
+        buyer = capacity = routing = assignment = None
+        assigned_rep_id = result.assigned_rep_id
+        if result.outcome == "new_prospect":
+            # copy_context keeps the lead span as the parent inside the worker threads.
+            buyer_job = FAN_OUT.submit(copy_context().run, _traced, "buyer_agent", "AGENT", buyer_agent, lead)
+            capacity_job = FAN_OUT.submit(
+                copy_context().run,
+                _traced,
+                "capacity_service",
+                "TOOL",
+                capacity_service,
+                result.shortlist,
+                reps,
+                lead.email_domain,
+            )
+            buyer, capacity = buyer_job.result(), capacity_job.result()
+            routing = _traced(
+                "routing_agent", "AGENT", routing_agent, lead, buyer, capacity, result.shortlist, result.related_rep_id
+            )
+            assignment = _traced("commit", "CHAIN", commit_assignment, lead, buyer, routing, result.shortlist, roster, store)
+            assigned_rep_id = assignment.rep_id
+            send_assignment(store, lead, buyer, routing, assignment)
+        elif result.ownership is not None:
+            send_owner_handoff(store, result.ownership)
+        lead_tracking_info = tracking(store, lead.submission_id) if (assignment or result.ownership) else None
+        set_output(
+            lead_span,
+            {
+                "status": result.outcome,
+                "assigned_rep_id": assigned_rep_id,
+                "urgency_tier": buyer.urgency_tier if buyer else None,
+                "extraction": buyer.extraction if buyer else None,
+                "routing_method": routing.method if routing else None,
+            },
+        )
     return SubmissionReceipt(
         submission_id=lead.submission_id,
         status=result.outcome,
@@ -283,3 +310,11 @@ def submit_lead(
         assignment=assignment,
         tracking=lead_tracking_info,
     )
+
+
+def _traced(name: str, kind: str, stage: Callable[..., Any], *args: Any) -> Any:
+    """Run one pipeline stage inside its own span and record its result."""
+    with span(name, kind) as current:
+        output = stage(*args)
+        set_output(current, output)
+        return output
