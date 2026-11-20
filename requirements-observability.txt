@@ -1,0 +1,12 @@
+# Optional: Arize Phoenix tracing + quality annotations for buyer evals.
+# Install: .venv/bin/pip install -r requirements-observability.txt
+# Local UI:  .venv/bin/phoenix serve
+# Then:      .venv/bin/python -m leadflow.eval_buyer --llm --phoenix
+#
+# Pin graphql-core: 3.2.14 breaks Phoenix 12.x GraphQL enums (UI crash on .edges).
+arize-phoenix>=11.0.0,<13
+arize-phoenix-otel>=0.10.0
+arize-phoenix-client>=1.0.0
+openinference-instrumentation-anthropic>=0.1.0
+opentelemetry-sdk>=1.28.0
+graphql-core>=3.2.0,<3.2.14

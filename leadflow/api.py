@@ -62,6 +62,11 @@ from leadflow.store import DecisionStore
 
 app = FastAPI(title="LeadFlow AI", version="0.2.0")
 
+# Optional Arize Phoenix tracing (LEADFLOW_PHOENIX=1). No-op when unset.
+from leadflow.observability import setup_phoenix  # noqa: E402
+
+setup_phoenix(project_name="leadflow-api")
+
 # Runs the buyer agent and the capacity service side by side for each new prospect.
 # Neither writes shared state, so they are safe to run at the same time.
 FAN_OUT = ThreadPoolExecutor(max_workers=8, thread_name_prefix="leadflow-fanout")
