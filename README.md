@@ -93,41 +93,49 @@ The agent's steps depend on what it finds:
 
 The score is capped at 1-100. 80 and above is High, 40 to 79 is Medium, below 40 is Low. The weights were tuned on the 15 workbook leads with an expected score, where behavior carries most of the weight because that is what the expected scores track. The workbook has no Low leads, so the Low cutoff is a team assumption.
 
-Run the evals with `.venv/bin/python -m leadflow.eval_buyer` (rules) or `--llm` (Claude, needs `ANTHROPIC_API_KEY`); add `--repeat 3` for replay consistency. With rule extraction, all 15 leads land in their expected tier, with no critical errors and a mean score error of 3 points. `data/buyer_signals_gold.json` holds hand-labelled signals for the same leads, used to check extraction accuracy. Three leads (CloudScale, PayFlow, DevStack) score exactly 80, so an extraction miss on those drops them to Medium.
+Run buyer evals with `.venv/bin/python -m leadflow.eval_buyer` (rules) or `--llm` (Claude, needs `ANTHROPIC_API_KEY`); add `--repeat 3` for replay consistency. With rule extraction, all 15 leads land in their expected tier, with no critical errors and a mean score error of 3 points. `data/buyer_signals_gold.json` holds hand-labelled signals for the same leads, used to check extraction accuracy. Three leads (CloudScale, PayFlow, DevStack) score exactly 80, so an extraction miss on those drops them to Medium.
+
+Routing and capacity have matching harnesses (same 15 shortlists):
+
+```bash
+.venv/bin/python -m leadflow.eval_routing          # ranker offline; add --llm for Claude
+.venv/bin/python -m leadflow.eval_capacity         # contract checks (no LLM)
+```
+
+The workbook has **no labeled “correct rep”** and **no expected bandwidth tiers**. Routing reports proposal validity and Claude↔ranker consistency; capacity reports `check_capacity` pass and exact shortlist coverage.
 
 #### Arize Phoenix (quality traces)
 
-The **labels used for eval** live in this repo (anyone who clones gets them):
+The **labels / baselines used for eval** live in this repo (anyone who clones gets them):
 
-| File | What it is |
-|------|------------|
+| File / source | What it is |
+|---------------|------------|
 | `data/LeadFlow AI mock dataset.xlsx` | 15 leads with expected intent score and urgency tier |
 | `data/buyer_signals_gold.json` | Hand-labelled note signals for those leads |
+| Ranker order (code) | Consistency baseline for routing — not a labeled correct rep |
+| Shortlist + `check_capacity` | Contract expected for capacity |
 
-`leadflow/eval_buyer.py` reads those files and prints metrics in the terminal. That is the source of truth.
+`leadflow/eval_buyer.py`, `eval_routing.py`, and `eval_capacity.py` print metrics in the terminal. That is the source of truth.
 
-**Phoenix Datasets are different.** Arize Phoenix is a local web app (http://127.0.0.1:6006). A “Dataset” there is just a copy of the same labels, uploaded into Phoenix’s own database so the UI can show tables and run experiments. That upload is **not** stored in GitHub. Cloning the repo does **not** put rows under Phoenix → Datasets until you run the command below on your machine (or point at a shared hosted Phoenix).
-
-To upload the workbook labels into your Phoenix and attach quality annotations to a run:
+**Phoenix Datasets are different.** Arize Phoenix is a local web app (http://127.0.0.1:6006). A “Dataset” there is just a copy of the same inputs/baselines, uploaded into Phoenix’s own database so the UI can show tables and run experiments. That upload is **not** stored in GitHub. Cloning the repo does **not** put rows under Phoenix → Datasets until you run the commands below on your machine (or point at a shared hosted Phoenix).
 
 ```bash
 .venv/bin/pip install -r requirements-observability.txt
 .venv/bin/phoenix serve   # UI at http://127.0.0.1:6006; leave this running
 .venv/bin/python -m leadflow.eval_buyer --llm --phoenix
+.venv/bin/python -m leadflow.eval_routing --llm --phoenix
+.venv/bin/python -m leadflow.eval_capacity --phoenix
 ```
 
-What that last command does:
+| Command | Phoenix dataset | Experiment (UI) | Project traces |
+|---------|-----------------|-----------------|----------------|
+| `eval_buyer [--llm] --phoenix` | `leadflow-buyer-workbook` | `buyer-rules` / `buyer-llm` | `leadflow-buyer-eval` |
+| `eval_routing [--llm] --phoenix` | `leadflow-routing-workbook` | `routing-ranker` / `routing-llm` | `leadflow-routing-eval` |
+| `eval_capacity --phoenix` | `leadflow-capacity-workbook` | `capacity-contract` | `leadflow-capacity-eval` |
 
-1. Runs the buyer agent on the 15 labeled leads (same as without `--phoenix`).
-2. Creates Phoenix dataset **`leadflow-buyer-workbook`** from the Excel + gold JSON (skips create if it already exists).
-3. Sends traces and CODE annotations (tier match, score error, signal agreement) to project **`leadflow-buyer-eval`**.
+Each `--phoenix` run creates/reuses the dataset, logs span annotations, and calls Phoenix `experiments.run_experiment` so results appear under **Datasets → (dataset) → Experiments** (not only under Projects).
 
-In the Phoenix UI after a successful run:
-
-- **Datasets → `leadflow-buyer-workbook`** — the uploaded labels (input = lead fields, output = expected score/tier/gold signals)
-- **Projects → `leadflow-buyer-eval`** — per-lead traces from that eval run
-
-Collaborators: pull the repo, start Phoenix, run `--phoenix` once. They rebuild the dataset from the same committed files; they do not need your laptop’s Phoenix DB.
+Collaborators: pull the repo, start Phoenix, run the `--phoenix` commands once. They rebuild datasets from the same committed files; they do not need your laptop’s Phoenix DB.
 
 For live API traces during the demo, set `LEADFLOW_PHOENIX=1` (and optionally `PHOENIX_COLLECTOR_ENDPOINT` / `PHOENIX_API_KEY` for hosted Phoenix).
 
@@ -257,7 +265,9 @@ cp .env.example .env   # then add your ANTHROPIC_API_KEY
 .venv/bin/uvicorn leadflow.api:app --reload
 ```
 
-The demo page is at http://127.0.0.1:8000/. Pick a sample lead (the 20 workbook submissions, plus scenarios for an existing customer, two account owners, a closed-lost account, a competitor's address, an unmapped country, and a duplicate), edit it if you like, and send it. The page shows which stage decided the lead, the buyer score and the points behind it, the capacity of each shortlisted rep, and the routing proposal with its rationale and brief. A link such as `http://127.0.0.1:8000/#send=sub_8f92a1c4` picks that sample and sends it straight away, which is handy for a presentation.
+The demo page is at http://127.0.0.1:8000/. Pick a sample lead (the 20 workbook submissions, plus scenarios for an existing customer, two account owners, a closed-lost account, a competitor's address, an unmapped country, and a duplicate), edit it if you like, and send it. The page shows which stage decided the lead, the buyer score and the points behind it, the capacity of each shortlisted rep, and the routing proposal with its rationale and brief. A link such as `http://127.0.0.1:8000/#send=sub_8f92a1c4` picks that sample and sends it straight away, which is handy for a short live demo (Demo Day allows about 1–2 minutes for a working implementation).
+
+For poster metrics without the UI, `GET /demo/eval-summary` returns workbook buyer, routing (ranker), and capacity numbers (same as the three `eval_*` modules offline).
 
 <p align="center">
   <img src="docs/demo-page.png" alt="The demo page after sending the FinPay lead: every stage passed, the lead committed to rep_003 with backup rep_027, its handoff message and New status with Mark Working and Mark Disqualified buttons, buyer score 98 High with its breakdown, Claude's routing rationale and rep brief, and the capacity table of the five shortlisted reps" width="100%">
@@ -271,6 +281,7 @@ Interactive API docs are at http://127.0.0.1:8000/docs. The `POST /leads` form t
 |---|---|
 | `GET /` | Demo page |
 | `GET /demo/samples` | Sample leads for the demo page |
+| `GET /demo/eval-summary` | Workbook buyer gold metrics for posters / quick quality checks |
 | `GET /health` | Returns `{"status": "ok"}` |
 | `POST /leads` | Validates, triages, routes, and commits a form submission. Returns `202` with the triage outcome as `status`, or `422` with a per-field error list. |
 | `GET /leads/{submission_id}/tracking` | The lead's assignment, status history, and messages sent about it |
@@ -337,6 +348,8 @@ leadflow/extraction.py               Note signals: Claude, with a rules fallback
 leadflow/scoring.py                  Rule-based intent score and tier
 leadflow/buyer_agent.py              Buyer agent: enrich, extract, score
 leadflow/eval_buyer.py               Buyer agent evals against the workbook
+leadflow/eval_routing.py             Routing evals: proposal validity + Claude↔ranker consistency
+leadflow/eval_capacity.py            Capacity evals: check_capacity + shortlist coverage
 leadflow/observability.py            Optional Arize Phoenix tracing (LEADFLOW_PHOENIX / --phoenix)
 leadflow/capacity.py                 Capacity service: bandwidth, stage pressure, and fit per shortlisted rep
 leadflow/routing.py                  Routing agent: Claude proposal, shortlist check, ranker fallback

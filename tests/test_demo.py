@@ -32,6 +32,19 @@ def test_page_is_served():
     response = client.get("/")
     assert response.status_code == 200
     assert "<title>LeadFlow AI</title>" in response.text
+    assert "Send lead" in response.text
+
+
+def test_eval_summary_for_demo():
+    body = client.get("/demo/eval-summary").json()
+    assert body["metrics"]["leads"] == 15
+    assert body["metrics"]["tier_accuracy"] == 1.0
+    assert body["metrics"]["critical_errors"] == 0
+    assert body["buyer"]["tier_accuracy"] == 1.0
+    assert body["routing"]["proposal_valid_rate"] == 1.0
+    assert body["capacity"]["check_pass_rate"] == 1.0
+    assert "buyer" in body["commands"] and "routing" in body["phoenix"]
+    assert len(body["talking_points"]) >= 4
 
 
 def test_samples_cover_the_workbook_and_scenarios():

@@ -1,9 +1,10 @@
 """Optional Arize Phoenix tracing for buyer/routing LLM calls and eval runs.
 
-Off by default. Enable with LEADFLOW_PHOENIX=1 (or --phoenix on eval_buyer).
-Requires the observability extras: arize-phoenix-otel, openinference-instrumentation-anthropic,
-and arize-phoenix-client. Point at a local Phoenix (`phoenix serve`) or Arize-hosted Phoenix
-via PHOENIX_COLLECTOR_ENDPOINT / PHOENIX_API_KEY.
+Off by default. Enable with LEADFLOW_PHOENIX=1 (or --phoenix on eval_buyer /
+eval_routing / eval_capacity). Requires the observability extras:
+arize-phoenix-otel, openinference-instrumentation-anthropic, and
+arize-phoenix-client. Point at a local Phoenix (`phoenix serve`) or Arize-hosted
+Phoenix via PHOENIX_COLLECTOR_ENDPOINT / PHOENIX_API_KEY.
 """
 from __future__ import annotations
 
