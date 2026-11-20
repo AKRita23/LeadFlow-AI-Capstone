@@ -50,7 +50,7 @@ STATUSES: Dict[str, Tuple[float, float, float, str]] = {
     "new_prospect": (1050, 130, 116, "new_prospect"),
 }
 
-PLANNED = {"handoff"}
+PLANNED: set = set()
 
 STATUS_HEIGHT = 30
 
@@ -96,7 +96,7 @@ SCENARIOS = [
                       "strong vs Intercom"),
             ("routing", "The routing agent proposes rep_003, backup rep_027: High bandwidth, FinTech, strong vs Intercom"),
             ("commit", "Commit re-checks the shortlist and rep_003's daily cap under a lock, then assigns the lead"),
-            ("handoff", "The rep gets the buyer brief, and the decision is saved"),
+            ("handoff", "rep_003 gets the brief in the outbox; if still New after 10 minutes, it moves to rep_027"),
         ],
         "branch": {"from": "new_prospect", "via": "capacity", "to": "routing", "sync": "buyer"},
     },
@@ -399,17 +399,21 @@ def render() -> str:
 
 
 def legend() -> List[str]:
+    """The key, one row per kind of mark. The Planned row appears only while a stage is planned."""
     x, y = 30, 360
-    return [
-        f'<rect class="node" x="{x}" y="{y}" width="26" height="16" rx="4"/>',
-        f'<text class="ltext" x="{x + 36}" y="{y + 12}">Built, runs from POST /leads</text>',
-        f'<rect class="node planned" x="{x}" y="{y + 28}" width="26" height="16" rx="4"/>',
-        f'<text class="ltext" x="{x + 36}" y="{y + 40}">Planned</text>',
-        f'<rect class="status" x="{x}" y="{y + 56}" width="26" height="16" rx="8"/>',
-        f'<text class="ltext" x="{x + 36}" y="{y + 68}">Status the API returns</text>',
-        f'<circle class="token" cx="{x + 13}" cy="{y + 92}" r="7"/>',
-        f'<text class="ltext" x="{x + 36}" y="{y + 96}">Example lead</text>',
+    rows = [
+        (f'<rect class="node" x="{x}" y="{{y}}" width="26" height="16" rx="4"/>', "Built, runs from POST /leads"),
+        (f'<rect class="status" x="{x}" y="{{y}}" width="26" height="16" rx="8"/>', "Status the API returns"),
+        (f'<circle class="token" cx="{x + 13}" cy="{{cy}}" r="7"/>', "Example lead"),
     ]
+    if PLANNED:
+        rows.insert(1, (f'<rect class="node planned" x="{x}" y="{{y}}" width="26" height="16" rx="4"/>', "Planned"))
+    out = []
+    for i, (mark, text) in enumerate(rows):
+        top = y + 28 * i
+        out.append(mark.format(y=top, cy=top + 8))
+        out.append(f'<text class="ltext" x="{x + 36}" y="{top + 12}">{text}</text>')
+    return out
 
 
 def main(output: Optional[Path] = None) -> None:

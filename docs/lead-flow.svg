@@ -117,7 +117,7 @@
 <rect class="node" x="483" y="372" width="124" height="56" rx="10"/>
 <text class="ntitle" x="545" y="397" text-anchor="middle">Validate, commit</text>
 <text class="nsub" x="545" y="414" text-anchor="middle">reps on shortlist</text>
-<rect class="node planned" x="308" y="372" width="124" height="56" rx="10"/>
+<rect class="node" x="308" y="372" width="124" height="56" rx="10"/>
 <text class="ntitle" x="370" y="397" text-anchor="middle">Rep handoff</text>
 <text class="nsub" x="370" y="414" text-anchor="middle">brief and history</text>
 <rect class="status" x="198" y="30" width="104" height="30" rx="15"/>
@@ -170,12 +170,10 @@
 <rect class="act-node" opacity="0" x="989" y="112" width="122" height="36" rx="18"><animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.181641;0.205515" values="0;1;0"/></rect>
 <rect class="node" x="30" y="360" width="26" height="16" rx="4"/>
 <text class="ltext" x="66" y="372">Built, runs from POST /leads</text>
-<rect class="node planned" x="30" y="388" width="26" height="16" rx="4"/>
-<text class="ltext" x="66" y="400">Planned</text>
-<rect class="status" x="30" y="416" width="26" height="16" rx="8"/>
-<text class="ltext" x="66" y="428">Status the API returns</text>
-<circle class="token" cx="43" cy="452" r="7"/>
-<text class="ltext" x="66" y="456">Example lead</text>
+<rect class="status" x="30" y="388" width="26" height="16" rx="8"/>
+<text class="ltext" x="66" y="400">Status the API returns</text>
+<circle class="token" cx="43" cy="424" r="7"/>
+<text class="ltext" x="66" y="428">Example lead</text>
 <rect class="cbox" x="20" y="484" width="1090" height="62" rx="10"/>
 <text class="cwho" x="40" y="508" opacity="0">Elena Rostova, FinPay (Spain)<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.346769" values="1;0"/></text>
 <text class="ctext" x="40" y="531" opacity="0">Submits the form: Intercom contract ends in 2 weeks, needs 40 seats before Q1<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.030439" values="1;0"/></text>
@@ -188,7 +186,7 @@
 <text class="ctext" x="40" y="531" opacity="0">In parallel: intent 98, High (workbook: 95); capacity rates rep_003 High bandwidth, strong vs Intercom<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.220038;0.253263" values="0;1;0"/></text>
 <text class="ctext" x="40" y="531" opacity="0">The routing agent proposes rep_003, backup rep_027: High bandwidth, FinTech, strong vs Intercom<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.253263;0.284100" values="0;1;0"/></text>
 <text class="ctext" x="40" y="531" opacity="0">Commit re-checks the shortlist and rep_003's daily cap under a lock, then assigns the lead<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.284100;0.314937" values="0;1;0"/></text>
-<text class="ctext" x="40" y="531" opacity="0">The rep gets the buyer brief, and the decision is saved<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.314937;0.346769" values="0;1;0"/></text>
+<text class="ctext" x="40" y="531" opacity="0">rep_003 gets the brief in the outbox; if still New after 10 minutes, it moves to rep_027<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.314937;0.346769" values="0;1;0"/></text>
 <text class="cwho" x="40" y="508" opacity="0">Test Bot, qa-automation-bot@test-domain-internal.org<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.354727;0.477200" values="0;1;0"/></text>
 <text class="ctext" x="40" y="531" opacity="0">An automated staging test submits the form<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.354727;0.385166" values="0;1;0"/></text>
 <text class="ctext" x="40" y="531" opacity="0">Schema valid<animate attributeName="opacity" dur="125.66s" repeatCount="indefinite" calcMode="discrete" keyTimes="0.000000;0.385166;0.415606" values="0;1;0"/></text>

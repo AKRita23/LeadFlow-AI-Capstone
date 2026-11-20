@@ -82,7 +82,7 @@ def commit_assignment(
         existing = store.assignment(lead.submission_id, conn)
         if existing is not None:
             store.set_assigned_rep(conn, lead.submission_id, existing["rep_id"])
-            return _assignment(existing, already_committed=True)
+            return assignment_from_record(existing, already_committed=True)
 
         load = store.rep_load(day, week, conn=conn)
         live = {rep.rep_id: rep for rep in live_reps(reps, store, lead.submitted_at, load=load)}
@@ -110,7 +110,7 @@ def commit_assignment(
             "rationale": routing.proposal.routing_rationale,
         }
         store.insert_assignment(conn, record)
-    return _assignment(record, already_committed=False)
+    return assignment_from_record(record, already_committed=False)
 
 
 def _candidates(routing: RoutingOutcome, shortlist: EligibleReps) -> List[str]:
@@ -134,7 +134,7 @@ def _unavailable(rep_id: str, shortlist: EligibleReps, live: Dict[str, Rep]) -> 
     return None
 
 
-def _assignment(record: dict, already_committed: bool) -> Assignment:
+def assignment_from_record(record: dict, already_committed: bool = False) -> Assignment:
     return Assignment(
         submission_id=record["submission_id"],
         outcome=record["outcome"],

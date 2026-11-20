@@ -13,25 +13,48 @@ shortlisted reps, computed in parallel, then a routing proposal (Claude when a k
 deterministic ranker as the fallback). The commit step then assigns the first
 free candidate under the live daily cap, or queues the lead for RevOps.
 Rep load is the workbook baseline plus committed assignments, so each
-assignment affects how the next lead is filtered and scored.
+assignment affects how the next lead is filtered and scored. The assigned rep
+(or RevOps, or an existing account's owner) gets a message in the mock Slack
+outbox, the rep moves the lead's status on, and the SLA watchdog reassigns
+High-urgency leads still at New after 10 minutes.
 """
 from concurrent.futures import ThreadPoolExecutor
 from functools import lru_cache
 from pathlib import Path
 from typing import Optional, Sequence, Tuple
 
-from fastapi import Depends, FastAPI, status
+from datetime import timedelta
+
+from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
 from leadflow.buyer_agent import BuyerContextAgent
 from leadflow.capacity import CapacityService
 from leadflow.commit import commit_assignment, live_reps
-from leadflow.contracts import Assignment, BuyerAssessment, CapacityMatrix, RoutingOutcome
+from leadflow.contracts import (
+    Assignment,
+    BuyerAssessment,
+    CapacityMatrix,
+    HandoffMessage,
+    LeadStatus,
+    LeadTracking,
+    RoutingOutcome,
+    WatchdogReport,
+)
 from leadflow.data_loader import TerritoryMap, load_accounts, load_enrichment, load_reps, load_territories
 from leadflow.demo import demo_samples
 from leadflow.enrichment import MockPostHog, MockTheirStack
 from leadflow.extraction import claude_from_env
+from leadflow.handoff import (
+    StatusError,
+    now_utc,
+    run_watchdog,
+    send_assignment,
+    send_owner_handoff,
+    tracking,
+    update_status,
+)
 from leadflow.models import Account, Lead, Rep, TriageOutcome, TriageResult
 from leadflow.pipeline import triage
 from leadflow.routing import RoutingAgent, router_from_env
@@ -86,6 +109,12 @@ class SubmissionReceipt(BaseModel):
     capacity: Optional[CapacityMatrix] = None
     routing: Optional[RoutingOutcome] = None
     assignment: Optional[Assignment] = None
+    tracking: Optional[LeadTracking] = None
+
+
+class StatusChange(BaseModel):
+    status: LeadStatus
+    note: str = ""
 
 
 @app.get("/health")
@@ -105,9 +134,41 @@ def samples() -> list:
     return demo_samples()
 
 
+@app.get("/leads/{submission_id}/tracking", response_model=LeadTracking)
+def lead_tracking(submission_id: str, store: DecisionStore = Depends(get_store)) -> LeadTracking:
+    """The lead's assignment, status history, and the messages sent about it."""
+    return tracking(store, submission_id)
+
+
+@app.post("/leads/{submission_id}/status", response_model=LeadTracking)
+def change_status(submission_id: str, change: StatusChange, store: DecisionStore = Depends(get_store)) -> LeadTracking:
+    """Move an assigned lead on, e.g. New to Working. 404 if it has no assignment, 409 if the move is not allowed."""
+    try:
+        return update_status(store, submission_id, change.status, change.note)
+    except StatusError as exc:
+        raise HTTPException(status_code=404 if exc.not_found else 409, detail=str(exc))
+
+
+@app.post("/watchdog/run", response_model=WatchdogReport)
+def watchdog(
+    minutes_ahead: float = 0,
+    reference: ReferenceData = Depends(get_reference_data),
+    store: DecisionStore = Depends(get_store),
+) -> WatchdogReport:
+    """Run the SLA watchdog. minutes_ahead pretends that much time has passed, for demos."""
+    _, roster, _ = reference
+    return run_watchdog(store, roster, now_utc() + timedelta(minutes=minutes_ahead))
+
+
+@app.get("/outbox", response_model=list)
+def outbox(limit: int = 20, store: DecisionStore = Depends(get_store)) -> list:
+    """The latest messages in the mock Slack outbox, newest first."""
+    return [HandoffMessage(**{k: m[k] for k in HandoffMessage.model_fields}) for m in store.handoffs(limit=limit)]
+
+
 @app.post("/demo/reset")
 def reset_demo(store: DecisionStore = Depends(get_store)) -> dict:
-    """Delete committed assignments so reps are back to the workbook's load."""
+    """Delete committed assignments, messages, and status history, so reps are back to the workbook's load."""
     return {"cleared_assignments": store.clear_assignments()}
 
 
@@ -136,6 +197,10 @@ def submit_lead(
         routing = routing_agent(lead, buyer, capacity, result.shortlist, result.related_rep_id)
         assignment = commit_assignment(lead, buyer, routing, result.shortlist, roster, store)
         assigned_rep_id = assignment.rep_id
+        send_assignment(store, lead, buyer, routing, assignment)
+    elif result.ownership is not None:
+        send_owner_handoff(store, result.ownership)
+    lead_tracking_info = tracking(store, lead.submission_id) if (assignment or result.ownership) else None
     return SubmissionReceipt(
         submission_id=lead.submission_id,
         status=result.outcome,
@@ -147,4 +212,5 @@ def submit_lead(
         capacity=capacity,
         routing=routing,
         assignment=assignment,
+        tracking=lead_tracking_info,
     )

@@ -315,6 +315,72 @@ class Assignment(BaseModel):
     already_committed: bool = False
 
 
+LeadStatus = Literal["New", "Working", "Converted", "Disqualified", "Escalated"]
+
+HandoffKind = Literal[
+    "assignment", "revops_queue", "reassigned_to", "reassigned_away", "escalated", "existing_account",
+    "ownership_exception",
+]
+
+WatchdogActionKind = Literal["reassigned", "escalated", "overdue"]
+
+
+class HandoffMessage(BaseModel):
+    """One message in the mock Slack outbox. recipient is a rep_id or "revops"."""
+
+    model_config = ConfigDict(frozen=True)
+
+    submission_id: str
+    sent_at: str
+    recipient: str
+    kind: HandoffKind
+    subject: str
+    body: str
+
+
+class StatusEvent(BaseModel):
+    """One change to an assigned lead's status. actor is "system", "rep", or "watchdog"."""
+
+    model_config = ConfigDict(frozen=True)
+
+    submission_id: str
+    changed_at: str
+    status: LeadStatus
+    actor: str
+    rep_id: Optional[str] = None
+    note: str = ""
+
+
+class LeadTracking(BaseModel):
+    """Where an assigned lead stands: its assignment, status history, and messages sent."""
+
+    submission_id: str
+    assignment: Optional[Assignment] = None
+    status: Optional[LeadStatus] = None
+    status_history: List[StatusEvent] = Field(default_factory=list)
+    messages: List[HandoffMessage] = Field(default_factory=list)
+
+
+class WatchdogAction(BaseModel):
+    """What the SLA watchdog did to one lead still at New past its time limit."""
+
+    model_config = ConfigDict(frozen=True)
+
+    submission_id: str
+    action: WatchdogActionKind
+    urgency_tier: Level
+    minutes_waiting: int
+    from_rep_id: Optional[str] = None
+    to_rep_id: Optional[str] = None
+    reason: str
+
+
+class WatchdogReport(BaseModel):
+    run_at: str
+    checked: int
+    actions: List[WatchdogAction] = Field(default_factory=list)
+
+
 class StepTiming(BaseModel):
     """How long one stage took, for the latency, fallback-rate, and demo views."""
 

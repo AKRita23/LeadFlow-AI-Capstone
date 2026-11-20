@@ -28,7 +28,17 @@
            color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
   button:disabled { opacity: .6; cursor: wait; }
   button.secondary { background: #fff; color: var(--text); border: 1px solid var(--line); font-weight: 500; }
-  #reset-note { margin-top: 6px; font-size: 12px; }
+  #reset-note, #wd-note { margin-top: 6px; font-size: 12px; }
+  .inline { display: flex; gap: 8px; align-items: end; }
+  .inline > div { flex: 1; }
+  .inline button { width: auto; padding: 7px 12px; margin-top: 0; }
+  .actions { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0; }
+  .actions button { width: auto; margin: 0; padding: 5px 12px; }
+  .msg { border-top: 1px solid var(--line); padding: 8px 0; }
+  .msg summary { color: var(--text); }
+  .msg .meta { color: var(--muted); font-size: 12px; }
+  .msg .brief { font-size: 13px; }
+  #outbox-list .msg { font-size: 13px; }
   .empty { color: var(--muted); }
   .banner { display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; }
   .status { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-weight: 600; padding: 2px 8px;
@@ -81,6 +91,19 @@
       <button id="reset" type="button" class="secondary">Reset assignments</button>
       <div id="reset-note" class="muted"></div>
     </div>
+    <div class="card">
+      <h2>SLA watchdog</h2>
+      <p class="muted">High-urgency leads still New after 10 minutes move to the backup rep. Medium (60 min) and Low (4 h) are reported as overdue.</p>
+      <div class="inline">
+        <div><label for="wd-min">Pretend this many minutes have passed</label><input id="wd-min" type="number" value="11" min="0"></div>
+        <button id="wd-run" type="button">Run watchdog</button>
+      </div>
+      <div id="wd-note" class="muted"></div>
+    </div>
+    <div class="card">
+      <h2>Outbox (mock Slack)</h2>
+      <div id="outbox-list" class="muted">No messages yet.</div>
+    </div>
   </section>
   <section id="result">
     <div class="card empty">Pick a sample or fill in the form, then send it.</div>
@@ -116,6 +139,11 @@ const DECIDED_AT = {
 };
 
 let samples = [];
+let last = null;  // the latest 202 response, re-rendered when its status changes
+const TRANSITIONS = {
+  New: ["Working", "Disqualified"], Working: ["Converted", "Disqualified"], Converted: [], Disqualified: [],
+  Escalated: ["Working", "Disqualified"],
+};
 
 function el(tag, attrs = {}, ...children) {
   const node = document.createElement(tag);
@@ -193,6 +221,7 @@ async function send(event) {
     });
     const body = await response.json();
     render(response.status, body, Math.round(performance.now() - started));
+    loadOutbox();
   } catch (error) {
     render(0, { detail: [{ loc: ["request"], msg: String(error) }] }, 0);
   } finally {
@@ -222,6 +251,7 @@ function render(httpStatus, body, ms) {
       stageStrip("schema"), el("ul", { class: "errors" }, errors)));
     return;
   }
+  last = { body, ms };
   const assignment = body.assignment;
   const assigned = assignment && assignment.outcome === "assigned";
   const ok = assigned || body.status === "preserve_owner";
@@ -232,7 +262,8 @@ function render(httpStatus, body, ms) {
       body.assigned_rep_id && el("strong", {}, `Assigned to ${body.assigned_rep_id}`),
       el("span", { class: "muted" }, `${ms} ms`)),
     stageStrip(DECIDED_AT[body.status], assigned)));
-  if (assignment) out.append(assignmentCard(assignment, body.routing));
+  if (assignment) out.append(assignmentCard(assignment, body.routing, body.tracking));
+  if (body.tracking && (body.tracking.status || body.tracking.messages.length)) out.append(handoffCard(body.tracking));
 
   const ownership = body.triage.ownership;
   if (ownership) {
@@ -256,14 +287,16 @@ const SKIP_REASONS = {
   not_on_shortlist: "not on the shortlist",
 };
 
-function assignmentCard(a, routing) {
-  const changed = !a.already_committed && a.rep_id && routing && a.rep_id !== routing.proposal.primary_rep_id;
+function assignmentCard(a, routing, tracking) {
+  const moved = tracking && tracking.status_history.some((e) => e.actor === "watchdog");
+  const changed = !moved && !a.already_committed && a.rep_id && routing && a.rep_id !== routing.proposal.primary_rep_id;
   return el("div", { class: "card" }, el("h2", {}, "Commit"),
     a.outcome === "assigned"
       ? el("div", { class: "banner" }, el("span", { class: "score" }, a.rep_id),
           a.backup_rep_id && el("span", { class: "muted" }, `backup ${a.backup_rep_id}`))
       : el("p", {}, "Sent to the RevOps queue: no shortlisted rep has a free slot today."),
     changed && el("p", {}, `The proposed rep ${routing.proposal.primary_rep_id} could not take the lead, so it went to the next free candidate.`),
+    moved && el("p", {}, "Changed by the SLA watchdog after the commit; see the status history below."),
     a.skipped.length > 0 && el("p", { class: "muted" },
       "Skipped: " + a.skipped.map(([rep, why]) => `${rep} (${SKIP_REASONS[why] || why})`).join(", ")),
     el("p", { class: "muted" }, a.already_committed
@@ -274,7 +307,75 @@ function assignmentCard(a, routing) {
 async function resetAssignments() {
   const note = document.getElementById("reset-note");
   const body = await (await fetch("/demo/reset", { method: "POST" })).json();
-  note.textContent = `Cleared ${body.cleared_assignments} ${body.cleared_assignments === 1 ? "assignment" : "assignments"}; reps are back to the workbook load.`;
+  note.textContent = `Cleared ${body.cleared_assignments} ${body.cleared_assignments === 1 ? "assignment" : "assignments"}, ` +
+    "with their messages and status history; reps are back to the workbook load.";
+  await refreshCurrent();
+}
+
+function messageItem(m, open) {
+  return el("details", { class: "msg", ...(open ? { open: "" } : {}) },
+    el("summary", {}, m.subject),
+    el("div", { class: "meta" }, `To ${m.recipient} · ${m.kind.replace(/_/g, " ")} · ${m.sent_at}`),
+    el("div", { class: "brief" }, m.body));
+}
+
+function handoffCard(t) {
+  const moves = t.assignment && t.assignment.rep_id || t.status === "Escalated" ? (TRANSITIONS[t.status] || []) : [];
+  const history = t.status_history.map((e) =>
+    el("li", {}, `${e.changed_at}: ${e.status}`, e.rep_id ? ` (${e.rep_id})` : "", ` by ${e.actor}`, e.note ? ` - ${e.note}` : ""));
+  return el("div", { class: "card" }, el("h2", {}, "Handoff and status"),
+    t.status && el("div", { class: "banner" },
+      el("span", { class: ["Escalated", "Disqualified"].includes(t.status) ? "status" : "status ok" }, t.status),
+      t.assignment && t.assignment.rep_id && el("span", {}, `with ${t.assignment.rep_id}`)),
+    moves.length > 0 && el("div", { class: "actions" },
+      moves.map((s) => {
+        const b = el("button", { type: "button", class: "secondary" }, `Mark ${s}`);
+        b.addEventListener("click", () => setStatus(t.submission_id, s));
+        return b;
+      })),
+    history.length > 0 && el("ul", { class: "muted" }, history),
+    el("h2", {}, "Messages sent"),
+    t.messages.length ? t.messages.map((m, i) => messageItem(m, i === t.messages.length - 1)) : el("p", { class: "muted" }, "None"));
+}
+
+async function setStatus(submissionId, status) {
+  const response = await fetch(`/leads/${submissionId}/status`, {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }),
+  });
+  if (!response.ok) alert((await response.json()).detail);
+  await refreshCurrent();
+}
+
+async function refreshCurrent() {
+  await loadOutbox();
+  if (!last) return;
+  const t = await (await fetch(`/leads/${last.body.submission_id}/tracking`)).json();
+  const body = last.body;
+  body.tracking = t;
+  if (body.assignment) {
+    body.assignment = t.assignment ? { ...t.assignment, already_committed: body.assignment.already_committed } : null;
+    body.assigned_rep_id = t.assignment ? t.assignment.rep_id : null;
+  }
+  render(202, body, last.ms);
+}
+
+async function runWatchdog() {
+  const minutes = Number(document.getElementById("wd-min").value || 0);
+  const report = await (await fetch(`/watchdog/run?minutes_ahead=${minutes}`, { method: "POST" })).json();
+  const lines = report.actions.map((a) => a.action === "reassigned"
+    ? `${a.submission_id}: reassigned ${a.from_rep_id} to ${a.to_rep_id}`
+    : a.action === "escalated" ? `${a.submission_id}: escalated to RevOps. ${a.reason}`
+    : `${a.submission_id}: overdue with ${a.from_rep_id} (${a.minutes_waiting} min)`);
+  document.getElementById("wd-note").textContent =
+    `Checked ${report.checked} assigned ${report.checked === 1 ? "lead" : "leads"} as if ${minutes} minutes had passed. ` +
+    (lines.length ? lines.join("; ") + "." : "Nothing past its time limit.");
+  await refreshCurrent();
+}
+
+async function loadOutbox() {
+  const messages = await (await fetch("/outbox?limit=8")).json();
+  const list = document.getElementById("outbox-list");
+  list.replaceChildren(...(messages.length ? messages.map((m) => messageItem(m, false)) : ["No messages yet."]));
 }
 
 function buyerCard(buyer) {
@@ -323,6 +424,8 @@ function capacityCard(capacity, shortlist, routing) {
 buildForm();
 document.getElementById("form").addEventListener("submit", send);
 document.getElementById("reset").addEventListener("click", resetAssignments);
+document.getElementById("wd-run").addEventListener("click", runWatchdog);
+loadOutbox();
 loadSamples();
 </script>
 </body>
