@@ -5,9 +5,7 @@ An autonomous multi-agent system to continuously evaluate live technographic and
 
 Short walkthrough of the inbound lead → triage → buyer/capacity → routing → assignment flow:
 
-https://github.com/abhipill/LeadFlow-AI-Capstone/blob/main/docs/LeadFlowAI_demo.mp4
-
-[Watch the demo video](docs/LeadFlowAI_demo.mp4)
+**[Watch the demo video](https://github.com/abhipill/LeadFlow-AI-Capstone/releases/download/demo-video/LeadFlowAI_demo.mp4)** ([release page](https://github.com/abhipill/LeadFlow-AI-Capstone/releases/tag/demo-video))
 
 ## How a lead flows
 
