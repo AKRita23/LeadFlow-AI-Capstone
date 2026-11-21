@@ -1,6 +1,14 @@
 # LeadFlow-AI-Capstone
 An autonomous multi-agent system to continuously evaluate live technographic and behavioral intent data, dynamically balance sales workloads, and instantly match high-intent prospects with the right sales reps.
 
+## Demo
+
+Short walkthrough of the inbound lead → triage → buyer/capacity → routing → assignment flow:
+
+https://github.com/abhipill/LeadFlow-AI-Capstone/blob/main/docs/LeadFlowAI_demo.mp4
+
+[Watch the demo video](docs/LeadFlowAI_demo.mp4)
+
 ## How a lead flows
 
 Every inbound form submission for BeaconDesk goes through cheap deterministic checks first. Only a new prospect with eligible reps reaches the two agents, which run in parallel: one reads the buyer, the other scores rep capacity. A routing agent then proposes the match, and code validates it before the assignment is committed.
@@ -102,7 +110,7 @@ Routing and capacity have matching harnesses (same 15 shortlists):
 .venv/bin/python -m leadflow.eval_capacity         # contract checks (no LLM)
 ```
 
-Routing now also scores against `data/routing_gold.json` (10 hand-labeled primaries/backups). Capacity still has **no expected bandwidth tiers** — contract checks only. Buyer holdout slice: `python -m leadflow.eval_buyer --holdout` (3 leads in `data/buyer_holdout.json`). Failure-mode mini-set: `python -m leadflow.eval_failure_modes`.
+Routing scores against `data/routing_gold.json` (10 hand-labeled primaries/backups). Capacity checks contracts and `data/capacity_bandwidth_gold.json` (12 labeled lead×rep bandwidth tiers). Buyer holdout: `python -m leadflow.eval_buyer --holdout`. Failure modes: `python -m leadflow.eval_failure_modes`.
 
 #### Arize Phoenix (quality traces)
 
@@ -114,6 +122,7 @@ The **labels / baselines used for eval** live in this repo (anyone who clones ge
 | `data/buyer_signals_gold.json` | Hand-labelled note signals for those leads |
 | Ranker order (code) | Consistency baseline for routing — not a labeled correct rep |
 | Shortlist + `check_capacity` | Contract expected for capacity |
+| `data/capacity_bandwidth_gold.json` | Hand-reviewed High/Medium/Low bandwidth for 12 lead×rep pairs |
 
 `leadflow/eval_buyer.py`, `eval_routing.py`, and `eval_capacity.py` print metrics in the terminal. That is the source of truth.
 
@@ -232,7 +241,7 @@ Each row also carries the raw counts (open opps, pipeline ARR, overdue tasks, un
 
 `RoutingAgent` picks a primary and a backup rep from the shortlist. It sees the lead, the `BuyerAssessment`, the `CapacityMatrix`, the shortlist, and the rep of an earlier lead from the same company domain, if there was one. It only proposes; nothing is assigned.
 
-1. Claude (`claude-haiku-5-5` by default, `LEADFLOW_ROUTING_MODEL` to change) returns the proposal as structured output. The JSON schema only allows rep IDs from the shortlist. Claude also writes `routing_rationale` and a `rep_brief` for the primary rep.
+1. Claude (`claude-haiku-4-5` by default, `LEADFLOW_ROUTING_MODEL` to change) returns the proposal as structured output. The JSON schema only allows rep IDs from the shortlist. Claude also writes `routing_rationale` and a `rep_brief` for the primary rep.
 2. `check_proposal` runs on the result: both reps on the shortlist, different, and a backup whenever the shortlist has more than one rep.
 3. If there is no API key, the call fails or times out, or the check fails, the ranker makes the proposal instead, with a template rationale and brief. `method` says which one was used, `llm_status` says why, and `problems` lists any check failures.
 
